@@ -26,16 +26,16 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INPUT FORMATTING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% input is split to (( . . . first part . . . ) ( . . . second part . . . ))
-%% first part of input formatted as ((vii) (o) (4 3))
 
-#(define (split-list symbols splitter)
-   ;; given (vii o 4 3 / V) --> ((vii o 4 3) (/ V))
-   ;; given (vii o 4 3) --> ((vii o 4 3) ())
+%% Split a list of strings by a splitter which is a member of a list of
+%% potential splitters.
+%% input is split into (( ...up to splitter... ) ( ...beginning with splitter... ))
+%% Used to split notation for secondary chords and to isolate inversion numbers
+#(define (split-list symbols splitter-list)
    (let loop ((sym symbols) (result '()))
      (cond
       ((or (null? sym)
-           (string= splitter (car sym)))
+           (find (lambda (y) (string= (car sym) y)) splitter-list))
        (list (reverse result) sym))
       (else (loop (cdr sym) (cons (car sym) result))))))
 
@@ -56,23 +56,13 @@
            (list (list (car arg)) '()))) ;; TODO figure out which is given
       ((= 2 len) (list (list (car arg)) (cdr arg))))))
 
-#(define (segment-inversion-test symbols)
+#(define (base-quality-inversion symbols)
    ;; given (vii o 4 3) --> ((vii) (o) (4 3)) with call to base-and-quality
    ;; (4 3) --> (() () (4 3))
    ;; () --> (() () ())
-   (let ((lst '()))
-     (define (helper symbols)
-       (if (find (lambda (y) (string= (car symbols) y)) numbers)
-           (append (base-and-quality lst) (cons symbols '()))
-           (begin
-            (set! lst (append lst (cons (car symbols) '())))
-            (if (null? (cdr symbols))
-                (append (base-and-quality lst) '(())) ; includes () for no numbers
-                (helper (cdr symbols))))))
-     (if (not (pair? symbols))
-         (list '() '() '())
-         (helper symbols))))
-
+   (let* ((split-by-numbers (split-list symbols numbers))
+          (b-and-q (base-and-quality (car split-by-numbers))))
+     (append b-and-q (cdr split-by-numbers))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTE NAMES / ACCIDENTALS %%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Based on English names.  For other languages, change the strings
@@ -235,8 +225,8 @@
 
 #(define-markup-command (rN layout props symbols) (markup-list?)
    #:properties ((font-size 1))
-   (let* ((split (split-list symbols "/"))
-          (first-part (segment-inversion-test (car split)))
+   (let* ((split (split-list symbols '("/")))
+          (first-part (base-quality-inversion (car split)))
           (second-part (cadr split));(cadr normalized)) ; slash and what follows
           (base (car first-part))
           (quality (cadr first-part))

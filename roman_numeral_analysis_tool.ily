@@ -32,15 +32,12 @@
 #(define (split-list symbols splitter)
    ;; given (vii o 4 3 / V) --> ((vii o 4 3) (/ V))
    ;; given (vii o 4 3) --> ((vii o 4 3) ())
-   (let ((lst '()))
-     (define (helper symbols splitter)
-       (if (string= splitter (car symbols))
-           (list lst symbols)
-           (begin (set! lst (append lst (cons (car symbols) '())))
-             (if (null? (cdr symbols))
-                 (list lst '())
-                 (helper (cdr symbols) splitter)))))
-     (helper symbols splitter)))
+   (let loop ((sym symbols) (result '()))
+     (cond
+      ((or (null? sym)
+           (string= splitter (car sym)))
+       (list (reverse result) sym))
+      (else (loop (cdr sym) (cons (car sym) result))))))
 
 #(define numbers '("2" "3" "4" "5" "6" "7" "8" "9" "11" "13"))
 
@@ -51,12 +48,13 @@
 
 #(define (base-and-quality arg)
    (let ((len (length arg)))
-     (cond ((= 0 len) '(() ()))
-       ((= 1 len)
-        (if (find (lambda (y) (string= (car arg) y)) qualities)
-            (list '() (list (car arg)))
-            (list (list (car arg)) '()))) ;; TODO figure out which is given
-       ((= 2 len) (list (list (car arg)) (cdr arg))))))
+     (cond
+      ((= 0 len) '(() ()))
+      ((= 1 len)
+       (if (find (lambda (y) (string= (car arg) y)) qualities)
+           (list '() (list (car arg)))
+           (list (list (car arg)) '()))) ;; TODO figure out which is given
+      ((= 2 len) (list (list (car arg)) (cdr arg))))))
 
 #(define (segment-inversion-test symbols)
    ;; given (vii o 4 3) --> ((vii) (o) (4 3)) with call to base-and-quality

@@ -68,47 +68,24 @@
 %% Based on English names.  For other languages, change the strings
 %% in the three following definitions.
 
-#(define notenames '("A" "a" "B" "b" "C" "c" "D" "d" "E" "e" "F" "f" "G" "g"))
+#(define notenames "AaBbCcDdEeFfGg")
+
+#(define (notename? str)
+   (number? (string-index str (string->char-set notenames) 0 1)))
 
 #(define alterations '("f" "ff" "s" "ss" "x" "n"))
 
-#(define (acc size-factor)
-   `(("f" . ,(make-raise-markup (* 0.3 size-factor) (make-flat-markup)))
-     ("ff" . ,(make-raise-markup (* 0.3 size-factor) (make-doubleflat-markup)))
-     ("s" . ,(make-raise-markup (* 0.6 size-factor) (make-sharp-markup)))
-     ("ss" . ,(make-raise-markup (* 0.3 size-factor) (make-doublesharp-markup)))
-     ("x" . ,(make-raise-markup (* 0.3 size-factor) (make-doublesharp-markup)))
-     ("n" . ,(make-raise-markup (* 0.6 size-factor) (make-natural-markup)))))
-
 #(define (initial-accidental-test arg)
-   ;; returns an alteration name or #f if none present
-   (let ((index (1- (string-length arg))))
-
-     (define (helper arg index)
-       ;; find the longest prefix that matches an entry in list of alterations
-       (or (find (lambda (x) (string= x (string-take arg index))) alterations)
-           (if (> index 1)
-               (helper arg (1- index)) #f)))
-
-     (if (or (string-null? arg)
-             (find (lambda (x) (string= x arg)) notenames) ; notename w/o accidental?
-             (terminal-accidental-test arg)) ; can't have an accidental before and after
-         #f
-         (helper arg index))))
+   "Find and return any accidental preceding a Roman numeral."
+   ; TODO: check for a Roman numeral!
+   (and (not (notename? arg))
+        (find (lambda (x) (string= x (string-drop-right arg 1))) alterations)))
 
 #(define (terminal-accidental-test arg)
-   (let ((index (1- (string-length arg))))
-
-     (define (helper arg index)
-       ;; find longest accidental suffix such that prefix is a notename
-       (or (and (find (lambda (x) (string= x (string-drop-right arg index))) notenames)
-                (find (lambda (x) (string= x (string-take-right arg index))) alterations))
-           (if (> index 1)
-               (helper arg (1- index)) #f)))
-
-     (if (< (string-length arg) 2)
-         #f
-         (helper arg index))))
+   "If @var{arg} is a notename with an accidental, return the accidental.  In all
+other cases, return @code{#f}."
+   (and (notename? arg)
+        (find (lambda (x) (string= x (substring arg 1))) alterations)))
 
 #(define (drop-initial-accidental arg)
    (string-drop arg (string-length (initial-accidental-test arg))))
@@ -124,6 +101,14 @@
        ((string= last-char "x") 0.2) ; double-sharp
        ((string= last-char "ss") 0.2) ; double-sharp
        (else 0.0))))
+
+#(define (acc size-factor)
+   `(("f" . ,(make-raise-markup (* 0.3 size-factor) (make-flat-markup)))
+     ("ff" . ,(make-raise-markup (* 0.3 size-factor) (make-doubleflat-markup)))
+     ("s" . ,(make-raise-markup (* 0.6 size-factor) (make-sharp-markup)))
+     ("ss" . ,(make-raise-markup (* 0.3 size-factor) (make-doublesharp-markup)))
+     ("x" . ,(make-raise-markup (* 0.3 size-factor) (make-doublesharp-markup)))
+     ("n" . ,(make-raise-markup (* 0.6 size-factor) (make-natural-markup)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BASE MARKUP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

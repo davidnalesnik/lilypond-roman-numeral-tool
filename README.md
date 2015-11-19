@@ -28,7 +28,7 @@ the following order (as needed): Roman numeral or note-name, quality,
 figured-bass numbers from top to bottom, `/` (for a secondary function),
 tonicized Roman numeral or note-name.  Usually, you can skip unnecessary items,
 though including an empty string (`""`) as a spacer may be needed in some
-ambiguous cases.
+ambiguous cases.  Components must be separated by whitespace.
 
 Preceding or following a symbol with English alterations
 (`f`, `s`, `ff`, `ss`, `x`, `n`) will attach accidentals: `fVII` &#x2192;

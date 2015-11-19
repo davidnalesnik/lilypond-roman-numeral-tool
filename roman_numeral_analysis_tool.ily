@@ -28,14 +28,15 @@
 
 
 %% Split a list of strings by a splitter which is a member of a list of
-%% potential splitters.
+%% potential splitters.  To split by "f6" or "+6" based on the list of numbers
+%% below, the splitter need only be part of a string.
 %% input is split into (( ...up to splitter... ) ( ...beginning with splitter... ))
 %% Used to split notation for secondary chords and to isolate inversion numbers
 #(define (split-list symbols splitter-list)
    (let loop ((sym symbols) (result '()))
      (cond
       ((or (null? sym)
-           (find (lambda (y) (string= (car sym) y)) splitter-list))
+           (find (lambda (y) (string-contains (car sym) y)) splitter-list))
        (list (reverse result) sym))
       (else (loop (cdr sym) (cons (car sym) result))))))
 

@@ -10,7 +10,7 @@ available for download [here](http://lilypond.org/download.html).
 ## How is it used?
 
 To make this tool available to your LilyPond file, you can either copy the code
-in `roman_numeral_analysis_tool.ily` directly into upit `ly` file, or you can add
+in `roman_numeral_analysis_tool.ily` directly into your `ly` file, or you can add
 `\include "roman_numeral_analysis_tool.ily"` to the head (assuming
 that both files are in the same directory).  The two methods do the same thing,
 but using `include` is a good way to keep your `.ly` file uncluttered.
@@ -24,11 +24,11 @@ Symbols are created by the `rN` command, for which the syntax is as follows:
 `\markup \rN { ...list of symbols... }`
 
 Between the curly brackets, list the components of a single Roman numeral in
-the following order (as needed): Roman numeral or note-name, quality, figured-
-bass numbers from top to bottom, `/` (for a secondary function), tonicized
-Roman numeral or note-name.  Usually, you can skip unnecessary items, though
-including an empty string (`""`) as a spacer may be needed in some ambiguous
-cases.
+the following order (as needed): Roman numeral or note-name, quality,
+figured-bass numbers from top to bottom, `/` (for a secondary function),
+tonicized Roman numeral or note-name.  Usually, you can skip unnecessary items,
+though including an empty string (`""`) as a spacer may be needed in some
+ambiguous cases.
 
 Preceding or following a symbol with English alterations
 (`f`, `s`, `ff`, `ss`, `x`, `n`) will attach accidentals: `fVII` &#x2192;

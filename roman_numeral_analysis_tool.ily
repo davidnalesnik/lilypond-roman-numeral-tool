@@ -76,23 +76,23 @@
 
 #(define alterations '("f" "ff" "s" "ss" "x" "n"))
 
-#(define (initial-accidental-test arg)
+#(define (get-initial-accidental arg)
    "Find and return any accidental preceding a Roman numeral."
    ; TODO: check for a Roman numeral!
    (and (not (notename? arg))
         (find (lambda (x) (string= x (string-drop-right arg 1))) alterations)))
 
-#(define (terminal-accidental-test arg)
+#(define (get-terminal-accidental arg)
    "If @var{arg} is a notename with an accidental, return the accidental.  In all
 other cases, return @code{#f}."
    (and (notename? arg)
         (find (lambda (x) (string= x (substring arg 1))) alterations)))
 
 #(define (drop-initial-accidental arg)
-   (string-drop arg (string-length (initial-accidental-test arg))))
+   (string-drop arg (string-length (get-initial-accidental arg))))
 
 #(define (drop-end-accidental arg)
-   (string-drop-right arg (string-length (terminal-accidental-test arg))))
+   (string-drop-right arg (string-length (get-terminal-accidental arg))))
 
 #(define (big-char? arg) ; offset after awkward characters
    (let ((last-char (string-take-right arg 1)))
@@ -115,8 +115,8 @@ other cases, return @code{#f}."
 
 #(define (make-base-markup base size)
    (let* ((size-factor (magstep size))
-          (init-acc (initial-accidental-test base))
-          (end-acc (terminal-accidental-test base)))
+          (init-acc (get-initial-accidental base))
+          (end-acc (get-terminal-accidental base)))
 
      (cond (init-acc
             (make-concat-markup
@@ -202,7 +202,7 @@ other cases, return @code{#f}."
          (make-concat-markup
           (list
            (make-hspace-markup (* 0.2 (magstep size)))
-           (if (initial-accidental-test (cadr second-part))
+           (if (get-initial-accidental (cadr second-part))
                (make-hspace-markup (* 0.2 (magstep size)))
                empty-markup)
            (make-base-markup (cadr second-part) size)))))))

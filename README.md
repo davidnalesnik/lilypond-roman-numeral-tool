@@ -35,8 +35,8 @@ Preceding or following a symbol with English alterations
 "flat VII"; `svi` &#x2192; "sharp vi"; `Af` &#x2192; A-flat;
 `As` &#x2192; A-sharp.
 
-Qualities: use `o` for diminished, `h` for half-diminished,
-`+` for augmented, `f` for flat; other indications are possible such as
+Qualities are indicated by `o` for diminished, `h` for half-diminished,
+`+` for augmented, and `f` for flat.  Other possibilities include
 combinations of `M` and `m` (`M`, `m`, `MM7`, `Mm`, `mm`, `Mmm9`, etc.);
 `add`, `add6`, etc.
 
@@ -46,4 +46,4 @@ or `\override TextScript #'font-size = #2`
 To scale individual numerals:
 `\markup \override #'(font-size . 2) \rN { ... }`
 
-The file `example.ly` give an illustration of usage.
+The file `example.ly` gives an illustration of usage.

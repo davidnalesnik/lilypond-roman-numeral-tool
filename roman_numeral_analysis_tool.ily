@@ -71,16 +71,29 @@
 
 #(define notenames "AaBbCcDdEeFfGg")
 
-#(define (notename? str)
-   (number? (string-index str (string->char-set notenames) 0 1)))
+%% Arranged in descending length so no need to search for longest match.
+#(define alterations '("ff" "ss" "f" "s" "x" "n"))
 
-#(define alterations '("f" "ff" "s" "ss" "x" "n"))
+#(define (notename? str)
+   (and
+    ;; first character is in list of note names
+    (number? (string-index str (string->char-set notenames) 0 1))
+    ;; All of remaining characters match an entry in alteration list
+    (or (= (string-length str) 1)
+        (and (find (lambda (s) (string= s (string-drop str 1))) alterations)
+             #t))))
+
+#(define (inversion? str)
+   "Check to see if a string contains a digit.  If so, it is an inversion figure."
+   (not (char-set= char-set:empty
+          (char-set-intersection (string->char-set str) char-set:digit))))
 
 #(define (get-initial-accidental arg)
-   "Find and return any accidental preceding a Roman numeral."
+   "Find and return any accidental preceding a Roman numeral or inversion figure."
    ; TODO: check for a Roman numeral!
-   (and (not (notename? arg))
-        (find (lambda (x) (string= x (string-drop-right arg 1))) alterations)))
+   (and (or (not (notename? arg))
+            (inversion? arg))
+        (find (lambda (s) (string-prefix? s arg)) alterations)))
 
 #(define (get-terminal-accidental arg)
    "If @var{arg} is a notename with an accidental, return the accidental.  In all
@@ -96,12 +109,13 @@ other cases, return @code{#f}."
 
 #(define (big-char? arg) ; offset after awkward characters
    (let ((last-char (string-take-right arg 1)))
-     (cond ((string= last-char "V") 0.1)
-       ((string= last-char "f") 0.2)
-       ((string= last-char "s") 0.2) ; sharp
-       ((string= last-char "x") 0.2) ; double-sharp
-       ((string= last-char "ss") 0.2) ; double-sharp
-       (else 0.0))))
+     (cond
+      ((string= last-char "V") 0.1)
+      ((string= last-char "f") 0.2)
+      ((string= last-char "s") 0.2) ; sharp
+      ((string= last-char "x") 0.2) ; double-sharp
+      ((string= last-char "ss") 0.2) ; double-sharp
+      (else 0.0))))
 
 #(define (acc size-factor)
    `(("f" . ,(make-raise-markup (* 0.3 size-factor) (make-flat-markup)))
@@ -117,27 +131,28 @@ other cases, return @code{#f}."
    (let* ((size-factor (magstep size))
           (init-acc (get-initial-accidental base))
           (end-acc (get-terminal-accidental base)))
-
-     (cond (init-acc
-            (make-concat-markup
-             (list (make-fontsize-markup -3 (assoc-ref (acc size-factor) init-acc))
-               (make-hspace-markup (* 0.2 size-factor))
-               (drop-initial-accidental base))))
-       (end-acc
-        (make-concat-markup
-         (list (drop-end-accidental base)
-           (make-hspace-markup (* size-factor (big-char? (drop-end-accidental base))))
-           (make-hspace-markup (* size-factor 0.2))
-           (make-fontsize-markup -3 (assoc-ref (acc size-factor) end-acc)))))
-       (else
-        (make-concat-markup
-         (list base
-           (make-hspace-markup (* size-factor
-                                 (big-char? base)))))))))
+     (cond
+      (init-acc
+       (make-concat-markup
+        (list (make-fontsize-markup -3 (assoc-ref (acc size-factor) init-acc))
+          (make-hspace-markup (* 0.2 size-factor))
+          (drop-initial-accidental base))))
+      (end-acc
+       (make-concat-markup
+        (list (drop-end-accidental base)
+          (make-hspace-markup (* size-factor (big-char? (drop-end-accidental base))))
+          (make-hspace-markup (* size-factor 0.2))
+          (make-fontsize-markup -3 (assoc-ref (acc size-factor) end-acc)))))
+      (else
+       (make-concat-markup
+        (list base
+          (make-hspace-markup (* size-factor
+                                (big-char? base)))))))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% QUALITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #(define (dim size)
+   "Create circle markup for diminished quality."
    (let* ((size-factor (magstep size))
           (r (* 0.3 size-factor))
           (th (* 0.1 size-factor)))
@@ -146,6 +161,7 @@ other cases, return @code{#f}."
       (make-draw-circle-markup r th #f))))
 
 #(define (half-dim size)
+   "Create slashed circle markup for half-diminished quality."
    (let* ((size-factor (magstep size))
           (x (* size-factor 0.35))
           (y (* size-factor 0.35))
@@ -161,6 +177,7 @@ other cases, return @code{#f}."
           (make-draw-line-markup (cons x y))))))))
 
 #(define (aug size)
+   "Create cross markup for augmented quality."
    (let* ((size-factor (magstep size))
           (x (* size-factor 0.35))
           (y (* size-factor 0.35)))
@@ -175,13 +192,14 @@ other cases, return @code{#f}."
            (make-draw-line-markup (cons 0 y))))))))
 
 #(define (make-quality-markup size offset quality)
-   (cond ((string= quality "o") (make-raise-markup (* 1.25 offset) (dim size)))
-     ((string= quality "h") (make-raise-markup (* 1.25 offset) (half-dim size)))
-     ((string= quality "+") (make-raise-markup (* 1.25 offset) (aug size)))
-     ((string= quality "f") (make-raise-markup (* 1.5 offset)
-                              (make-fontsize-markup (- size 5)
-                                (make-flat-markup))))
-     (else (make-raise-markup offset (make-fontsize-markup -3 quality)))))
+   (cond
+    ((string= quality "o") (make-raise-markup (* 1.25 offset) (dim size)))
+    ((string= quality "h") (make-raise-markup (* 1.25 offset) (half-dim size)))
+    ((string= quality "+") (make-raise-markup (* 1.25 offset) (aug size)))
+    ((string= quality "f") (make-raise-markup (* 1.5 offset)
+                             (make-fontsize-markup (- size 5)
+                               (make-flat-markup))))
+    (else (make-raise-markup offset (make-fontsize-markup -3 quality)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INVERSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -189,7 +207,7 @@ other cases, return @code{#f}."
    (make-fontsize-markup -3
      (make-override-markup `(baseline-skip . ,(* 1.4 (magstep size)))
        (make-raise-markup offset
-         (make-column-markup figures)))))
+         (make-right-column-markup figures)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SECONDARY RN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

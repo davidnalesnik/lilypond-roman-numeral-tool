@@ -30,10 +30,13 @@ tonicized Roman numeral or note-name.  Usually, you can skip unnecessary items,
 though including an empty string (`""`) as a spacer may be needed in some
 ambiguous cases.  Components must be separated by whitespace.
 
-Preceding or following a symbol with English alterations
-(`f`, `s`, `ff`, `ss`, `x`, `n`) will attach accidentals: `fVII` &#x2192;
+Preceding a Roman numeral or following a note-name with `f`, `s`, `ff`,
+`ss`, `x`, or `n` will attach accidentals.  Examples: `fVII` &#x2192;
 "flat VII"; `svi` &#x2192; "sharp vi"; `Af` &#x2192; A-flat;
 `As` &#x2192; A-sharp.
+
+These symbols may also precede inversion figures: `f6`, `s11`, etc.  Use of
+`+` for a raised figure is on the todo-list.
 
 Qualities are indicated by `o` for diminished, `h` for half-diminished,
 `+` for augmented, and `f` for flat.  Other possibilities include

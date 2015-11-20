@@ -203,11 +203,26 @@ other cases, return @code{#f}."
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INVERSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+#(define (format-figures figures size)
+   (let ((size-factor (magstep size)))
+     (map (lambda (fig)
+            (let ((init-acc (get-initial-accidental fig)))
+              (cond
+               (init-acc
+                (make-concat-markup
+                 (list
+                  (make-fontsize-markup -3 (assoc-ref (acc size-factor) init-acc))
+                  (make-hspace-markup (* 0.2 size-factor))
+                  (markup (drop-initial-accidental fig)))))
+               (else (markup fig)))))
+       figures)))
+
 #(define (make-inversion-markup size offset figures)
-   (make-fontsize-markup -3
-     (make-override-markup `(baseline-skip . ,(* 1.4 (magstep size)))
-       (make-raise-markup offset
-         (make-right-column-markup figures)))))
+   (let ((formatted-figures (format-figures figures 1)))
+     (make-fontsize-markup -3
+       (make-override-markup `(baseline-skip . ,(* 1.4 (magstep size)))
+         (make-raise-markup offset
+           (make-right-column-markup formatted-figures))))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SECONDARY RN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -240,9 +255,11 @@ other cases, return @code{#f}."
           (dy (* 0.5
                 (interval-length
                  (ly:stencil-extent
-                  (interpret-markup layout props (if (or (null? base) (string= "" (car base)))
-                                                     "/"
-                                                     (make-base-markup (car base) font-size)))
+                  (interpret-markup
+                   layout props (if (or (null? base)
+                                        (string= "" (car base)))
+                                    "/"
+                                    (make-base-markup (car base) font-size)))
                   Y)))))
 
      (interpret-markup layout props

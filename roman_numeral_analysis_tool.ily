@@ -256,6 +256,7 @@ its string, otherwise @code{#t}."
           (base (car first-part))
           (quality (cadr first-part))
           (inversion (caddr first-part))
+          (base-markup (make-base-markup (car base) font-size))
           (size-factor (magstep font-size))
           ;; height of inversion and quality determined by midline of base
           (dy (* 0.5
@@ -265,7 +266,7 @@ its string, otherwise @code{#t}."
                    layout props (if (or (null? base)
                                         (string-null? (car base)))
                                     "/"
-                                    (make-base-markup (car base) font-size)))
+                                    base-markup))
                   Y)))))
 
      (interpret-markup layout props
@@ -275,7 +276,7 @@ its string, otherwise @code{#t}."
              empty-markup
              (make-concat-markup
               (list
-               (make-base-markup (car base) font-size)
+               base-markup
                (make-hspace-markup (* size-factor (big-char? (car base)))))))
          (if (null? quality)
              empty-markup

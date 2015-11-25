@@ -236,7 +236,7 @@ its string, otherwise @code{#t}."
    (make-concat-markup
     (list
      (car second-part)
-     (if (string= (cadr second-part) "")
+     (if (string-null? (cadr second-part))
          empty-markup
          (make-concat-markup
           (list
@@ -263,7 +263,7 @@ its string, otherwise @code{#t}."
                  (ly:stencil-extent
                   (interpret-markup
                    layout props (if (or (null? base)
-                                        (string= "" (car base)))
+                                        (string-null? (car base)))
                                     "/"
                                     (make-base-markup (car base) font-size)))
                   Y)))))
@@ -271,7 +271,7 @@ its string, otherwise @code{#t}."
      (interpret-markup layout props
        (make-concat-markup
         (list
-         (if (or (null? base) (string= (car base) "")) ; "" used as spacer
+         (if (or (null? base) (string-null? (car base))) ; "" used as spacer
              empty-markup
              (make-concat-markup
               (list

@@ -83,10 +83,37 @@
         (and (find (lambda (s) (string= s (string-drop str 1))) alterations)
              #t))))
 
+#(define (parse-string-with-accidental str)
+   "Given @var{str}, return a list in this format: (initial-accidental?
+notename-or-figure-or-RN terminal-accidental?) If an accidental is found, include
+its string, otherwise @code{#t}."
+   (if (not (string-null? str))
+       (let* ((first-char (string-take str 1))
+              (all-but-first (string-drop str 1))
+              (all-but-first (if (string-null? all-but-first) #f all-but-first)))
+         ;; Is it a notename with optional accidental?
+         (if (and (string-contains notenames first-char)
+                  (or (not all-but-first)
+                      (find (lambda (s) (string= s all-but-first)) alterations)))
+             (list #f first-char all-but-first)
+             ;; Is it a Roman numeral or figure preceded by an accidental?
+             (let* ((accidental-prefix
+                     (find (lambda (s) (string-prefix? s str)) alterations))
+                    (rest (if accidental-prefix
+                              (string-drop str (string-length accidental-prefix))
+                              str)))
+               (list accidental-prefix rest #f))))))
+
 #(define (inversion? str)
    "Check to see if a string contains a digit.  If so, it is an inversion figure."
-   (not (char-set= char-set:empty
-          (char-set-intersection (string->char-set str) char-set:digit))))
+   (not (char-set=
+         char-set:empty
+         (char-set-intersection (string->char-set str) char-set:digit))))
+
+%% TODO: it would be more efficient to have a function which would take
+%% a string, and parse it into a list of (accidental RN/figure) or (notename accidental)
+%% There would be no need of drop-initial- and drop-terminal-accidental, and get-
+%% functions would simply return a member of the list.
 
 #(define (get-initial-accidental arg)
    "Find and return any accidental preceding a Roman numeral or inversion figure."

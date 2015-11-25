@@ -74,6 +74,7 @@
 %% Arranged in descending length so no need to search for longest match.
 #(define alterations '("ff" "ss" "f" "s" "x" "n"))
 
+%{
 #(define (notename? str)
    (and
     ;; first character is in list of note names
@@ -82,7 +83,7 @@
     (or (= (string-length str) 1)
         (and (find (lambda (s) (string= s (string-drop str 1))) alterations)
              #t))))
-
+%}
 #(define (parse-string-with-accidental str)
    "Given @var{str}, return a list in this format: (initial-accidental?
 notename-or-figure-or-RN terminal-accidental?) If an accidental is found, include
@@ -103,37 +104,13 @@ its string, otherwise @code{#t}."
                               (string-drop str (string-length accidental-prefix))
                               str)))
                (list accidental-prefix rest #f))))))
-
+%{
 #(define (inversion? str)
    "Check to see if a string contains a digit.  If so, it is an inversion figure."
    (not (char-set=
          char-set:empty
          (char-set-intersection (string->char-set str) char-set:digit))))
-
-%% TODO: it would be more efficient to have a function which would take
-%% a string, and parse it into a list of (accidental RN/figure) or (notename accidental)
-%% There would be no need of drop-initial- and drop-terminal-accidental, and get-
-%% functions would simply return a member of the list.
-
-#(define (get-initial-accidental arg)
-   "Find and return any accidental preceding a Roman numeral or inversion figure."
-   ; TODO: check for a Roman numeral!
-   (and (or (not (notename? arg))
-            (inversion? arg))
-        (find (lambda (s) (string-prefix? s arg)) alterations)))
-
-#(define (get-terminal-accidental arg)
-   "If @var{arg} is a notename with an accidental, return the accidental.  In all
-other cases, return @code{#f}."
-   (and (notename? arg)
-        (find (lambda (x) (string= x (substring arg 1))) alterations)))
-
-#(define (drop-initial-accidental arg)
-   (string-drop arg (string-length (get-initial-accidental arg))))
-
-#(define (drop-end-accidental arg)
-   (string-drop-right arg (string-length (get-terminal-accidental arg))))
-
+%}
 #(define (big-char? arg) ; offset after awkward characters
    (let ((last-char (string-take-right arg 1)))
      (cond
@@ -156,18 +133,19 @@ other cases, return @code{#f}."
 
 #(define (make-base-markup base size)
    (let* ((size-factor (magstep size))
-          (init-acc (get-initial-accidental base))
-          (end-acc (get-terminal-accidental base)))
+          (base-list (parse-string-with-accidental base))
+          (init-acc (first base-list))
+          (end-acc (last base-list)))
      (cond
       (init-acc
        (make-concat-markup
         (list (make-fontsize-markup -3 (assoc-ref (acc size-factor) init-acc))
           (make-hspace-markup (* 0.2 size-factor))
-          (drop-initial-accidental base))))
+          (second base-list))))
       (end-acc
        (make-concat-markup
-        (list (drop-end-accidental base)
-          (make-hspace-markup (* size-factor (big-char? (drop-end-accidental base))))
+        (list (second base-list)
+          (make-hspace-markup (* size-factor (big-char? (second base-list))))
           (make-hspace-markup (* size-factor 0.2))
           (make-fontsize-markup -3 (assoc-ref (acc size-factor) end-acc)))))
       (else
@@ -233,14 +211,15 @@ other cases, return @code{#f}."
 #(define (format-figures figures size)
    (let ((size-factor (magstep size)))
      (map (lambda (fig)
-            (let ((init-acc (get-initial-accidental fig)))
+            (let* ((figure-list (parse-string-with-accidental fig))
+                   (init-acc (car figure-list)))
               (cond
                (init-acc
                 (make-concat-markup
                  (list
                   (make-fontsize-markup -3 (assoc-ref (acc size-factor) init-acc))
                   (make-hspace-markup (* 0.2 size-factor))
-                  (markup (drop-initial-accidental fig)))))
+                  (markup (second figure-list)))))
                (else (markup fig)))))
        figures)))
 
@@ -262,7 +241,7 @@ other cases, return @code{#f}."
          (make-concat-markup
           (list
            (make-hspace-markup (* 0.2 (magstep size)))
-           (if (get-initial-accidental (cadr second-part))
+           (if (car (parse-string-with-accidental (cadr second-part)))
                (make-hspace-markup (* 0.2 (magstep size)))
                empty-markup)
            (make-base-markup (cadr second-part) size)))))))

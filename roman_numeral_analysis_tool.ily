@@ -6,14 +6,16 @@
 %% Syntax: \markup \rN { ...list of symbols... }
 %%
 %% List symbols in this order (as needed): Roman numeral (or note-name),
-%% quality, top number of inversion symbol, bottom number, "/" (if secondary
+%% quality, inversion figures from top to bottom, "/" (if a secondary
 %% function), Roman numeral (or note-name).  Usually, you can skip unnecessary
 %% items, though a spacer may be needed in some cases.  Use "" instead of the
-%% initial symbol to start with the quality or inversion, for example.
+%% initial symbol to start with the quality or inversion, for example.  Elements
+%% must be separated by whitespace.
 %%
 %% Preceding or following a symbol with English alterations (f, s, ff, ss, x, n)
 %% will attach accidentals: "fVII" -> flat VII; "svi" -> sharp vi; "Af" -> A-flat;
-%% "As" A-sharp
+%% "As" A-sharp.  You may precede inversion numbers with alterations; "+" is not
+%% presently supported.
 %%
 %% Qualities: use "o" for diminished, "h" for half-diminished,
 %% "+" for augmented, "f" for flat; other indications are possible such as
@@ -24,15 +26,45 @@
 %% To scale individual numerals: \markup \override #'(font-size . 2) \rN { ... }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% THE APPROACH %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% In our approach, a Roman numeral consists of
+
+%% 1. A "base".  OPTIONAL. This may be a Roman numeral (some combination of I, i, V,
+%% and v, unenforced); a notename; or some other string.  Roman numerals may be
+%% preceded by an accidental, and a notename may be followed by one.
+
+%% 2. a quality indicator.  OPTIONAL.  Eventually, this will simply be something to
+%% set as a superscript following the base, whether or not it is actually a
+%% indicator of quality.
+
+%% 3. A single inversion number, or more than one, to be set as a column.  OPTIONAL.
+%% An initial accidental is supported.  (This will be extended to "anything you want
+%% to appear in a column after the quality indicator.")
+
+%% 4. A "secondary base" preceded by "/" for indicating tonicization.  OPTIONAL.
+%% As with 1. this may a Roman numeral or notename, and may include an accidental.
+
+%% The input syntax is chosen to be friendly to the user rather than the computer.
+%% In particular, the user usually need only type the symbols needed when
+%% reading the analytical symbol aloud.  This is not perfect: spacers
+%% may be necessary for omissions.  Additionally, we try to interpret symbols
+%% without requiring extra semantic indicators: i.e., figure out whether a string
+%% represents a Roman numeral or a notename without the user adding an extra sign.
+%% In the future, indicators might prove necessary to resolve ambiguity: along with
+%% a flag to distinguish Roman numeral from notename, braces to enclose inversion
+%% figures may be useful.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INPUT FORMATTING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-%% Split a list of strings by a splitter which is a member of a list of
-%% potential splitters.  To split by "f6" or "+6" based on the list of numbers
-%% below, the splitter need only be part of a string.
-%% input is split into (( ...up to splitter... ) ( ...beginning with splitter... ))
-%% Used to split notation for secondary chords and to isolate inversion numbers
 #(define (split-list symbols splitter-list)
+   "Split a list of strings by a splitter which is a member of a list of
+potential splitters.  The splitter may be alone or part of a string.
+input is split into
+@code{(( ...up to splitter... ) ( ...beginning with splitter... ))}
+This function is Used to split notation for secondary chords and to isolate
+inversion numbers."
    (let loop ((sym symbols) (result '()))
      (cond
       ((or (null? sym)
@@ -66,8 +98,7 @@
      (append b-and-q (cdr split-by-numbers))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTE NAMES / ACCIDENTALS %%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Based on English names.  For other languages, change the strings
-%% in the three following definitions.
+%% Based on English names.
 
 #(define notenames "AaBbCcDdEeFfGg")
 
@@ -111,17 +142,20 @@ its string, otherwise @code{#t}."
          char-set:empty
          (char-set-intersection (string->char-set str) char-set:digit))))
 %}
-#(define (big-char? arg) ; offset after awkward characters
+%% Add extra space after certain characters.  Several of these corrections don't seem
+%% to be necessary anymore.
+#(define (big-char? arg)
    (let ((last-char (string-take-right arg 1)))
      (cond
       ((string= last-char "V") 0.1)
       ((string= last-char "f") 0.2)
-      ((string= last-char "s") 0.2) ; sharp
-      ((string= last-char "x") 0.2) ; double-sharp
-      ((string= last-char "ss") 0.2) ; double-sharp
+      ;((string= last-char "s") 0.2) ; sharp
+      ;((string= last-char "x") 0.2) ; double-sharp
+      ;((string= last-char "ss") 0.2) ; double-sharp
       (else 0.0))))
 
-#(define (acc size-factor)
+%% Adjust the vertical alignment of accidentals.
+#(define (raise-acc size-factor)
    `(("f" . ,(make-raise-markup (* 0.3 size-factor) (make-flat-markup)))
      ("ff" . ,(make-raise-markup (* 0.3 size-factor) (make-doubleflat-markup)))
      ("s" . ,(make-raise-markup (* 0.6 size-factor) (make-sharp-markup)))
@@ -139,7 +173,7 @@ its string, otherwise @code{#t}."
      (cond
       (init-acc
        (make-concat-markup
-        (list (make-fontsize-markup -3 (assoc-ref (acc size-factor) init-acc))
+        (list (make-fontsize-markup -3 (assoc-ref (raise-acc size-factor) init-acc))
           (make-hspace-markup (* 0.2 size-factor))
           (second base-list))))
       (end-acc
@@ -147,7 +181,7 @@ its string, otherwise @code{#t}."
         (list (second base-list)
           (make-hspace-markup (* size-factor (big-char? (second base-list))))
           (make-hspace-markup (* size-factor 0.2))
-          (make-fontsize-markup -3 (assoc-ref (acc size-factor) end-acc)))))
+          (make-fontsize-markup -3 (assoc-ref (raise-acc size-factor) end-acc)))))
       (else
        (make-concat-markup
         (list base
@@ -217,7 +251,7 @@ its string, otherwise @code{#t}."
                (init-acc
                 (make-concat-markup
                  (list
-                  (make-fontsize-markup -3 (assoc-ref (acc size-factor) init-acc))
+                  (make-fontsize-markup -3 (assoc-ref (raise-acc size-factor) init-acc))
                   (make-hspace-markup (* 0.2 size-factor))
                   (markup (second figure-list)))))
                (else (markup fig)))))
@@ -252,7 +286,7 @@ its string, otherwise @code{#t}."
    #:properties ((font-size 1))
    (let* ((split (split-list symbols '("/")))
           (first-part (base-quality-inversion (car split)))
-          (second-part (cadr split));(cadr normalized)) ; slash and what follows
+          (second-part (cadr split)) ; slash and what follows
           (base (car first-part))
           (quality (cadr first-part))
           (inversion (caddr first-part))

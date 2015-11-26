@@ -43,7 +43,7 @@
 %% An initial accidental is supported.  (This will be extended to "anything you want
 %% to appear in a column after the quality indicator.")
 
-%% 4. A "secondary base" preceded by "/" for indicating tonicization.  OPTIONAL.
+%% 4. "/" followed by a "secondary base" for indicating tonicization.  OPTIONAL.
 %% As with 1. this may a Roman numeral or notename, and may include an accidental.
 
 %% The input syntax is chosen to be friendly to the user rather than the computer.
@@ -58,11 +58,22 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INPUT FORMATTING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% The user's input is available as a list of strings.  Here we convert this
+%% list into lists which describe the input more completely.
+
+%% The command \rN uses split-list first to break the input list into a nested
+%% list divided by "/" in order to account for secondary functions: ((vii o 4 3) (/ ii))
+
+%% It then splits the first part of this list into a nested list separating
+%% the base-and-quality (as a unit) from inversion figures: ((vii o) (4 3))
+
+%% The base-and-quality/quality list is then broken up: ((vii) (o) (4 3))
+
 #(define (split-list symbols splitter-list)
    "Split a list of strings by a splitter which is a member of a list of
 potential splitters.  The splitter may be alone or part of a string.
 input is split into
-@code{(( ...up to splitter... ) ( ...beginning with splitter... ))}
+@code{(( ...strings up to splitter... ) ( ...strings beginning with splitter... ))}
 This function is Used to split notation for secondary chords and to isolate
 inversion numbers."
    (let loop ((sym symbols) (result '()))
@@ -90,19 +101,33 @@ inversion numbers."
       ((= 2 len) (list (list (car arg)) (cdr arg))))))
 
 #(define (base-quality-inversion symbols)
-   ;; given (vii o 4 3) --> ((vii) (o) (4 3)) with call to base-and-quality
-   ;; (4 3) --> (() () (4 3))
-   ;; () --> (() () ())
+   ;; given (vii o 4 3) --> ((vii o) (4 3)) --> ((vii) (o) (4 3))
+   ;; (4 3) --> (() (4 3)) --> (() () (4 3))
+   ;; () --> (() ()) --> (() () ())
    (let* ((split-by-numbers (split-list symbols numbers))
           (b-and-q (base-and-quality (car split-by-numbers))))
      (append b-and-q (cdr split-by-numbers))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTE NAMES / ACCIDENTALS %%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Based on English names.
+
+%% Formatting the input into interpretable lists continues here.  We are now
+%% concerned with distinguishing Roman numerals from notenames, and with representing
+%% the presence and position of accidentals.
+
+%% The assumption is that accidentals only precede Roman numerals ("flat-II") and only
+%% follow the letter portion of a notename ("A-sharp").  In the future, we may represent
+%% notenames by their LilyPond names, allowing in addition for capitalization since
+%% lowercase and uppercase notenames are used to indicate chord quality.
+
+%% The procedure parse-string-with-accidental breaks a string into a list representing
+%% initial/terminal accidentals and what is left.
+
+%% Note names and names of accidentals are based on English names at the moment.
 
 #(define notenames "AaBbCcDdEeFfGg")
 
-%% Arranged in descending length so no need to search for longest match.
+%% Arranged in descending length so there is no need to search for longest match in
+%% parse-string-with-accidental.
 #(define alterations '("ff" "ss" "f" "s" "x" "n"))
 
 %{
@@ -142,8 +167,10 @@ its string, otherwise @code{#t}."
          char-set:empty
          (char-set-intersection (string->char-set str) char-set:digit))))
 %}
-%% Add extra space after certain characters.  Several of these corrections don't seem
-%% to be necessary anymore.
+
+%% We need to add extra space after certain characters in the default LilyPond
+%% font to avoid overlaps with characters that follow.  Several of these kernings
+%% don't seem to be necessary anymore, and have been commented out.
 #(define (big-char? arg)
    (let ((last-char (string-take-right arg 1)))
      (cond
@@ -154,7 +181,8 @@ its string, otherwise @code{#t}."
       ;((string= last-char "ss") 0.2) ; double-sharp
       (else 0.0))))
 
-%% Adjust the vertical alignment of accidentals.
+%% The default vertical position of accidental glyphs does not look right at all.
+%% Corrections are located here.  Should we align using \general-align?
 #(define (raise-acc size-factor)
    `(("f" . ,(make-raise-markup (* 0.3 size-factor) (make-flat-markup)))
      ("ff" . ,(make-raise-markup (* 0.3 size-factor) (make-doubleflat-markup)))

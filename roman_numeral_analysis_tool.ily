@@ -183,72 +183,71 @@ its string, otherwise @code{#t}."
 
 %% The default vertical position of accidental glyphs does not look right at all.
 %% Corrections are located here.  Should we align using \general-align?
-#(define (raise-acc size-factor)
-   `(("f" . ,(make-raise-markup (* 0.3 size-factor) (make-flat-markup)))
-     ("ff" . ,(make-raise-markup (* 0.3 size-factor) (make-doubleflat-markup)))
-     ("s" . ,(make-raise-markup (* 0.6 size-factor) (make-sharp-markup)))
-     ("ss" . ,(make-raise-markup (* 0.3 size-factor) (make-doublesharp-markup)))
-     ("x" . ,(make-raise-markup (* 0.3 size-factor) (make-doublesharp-markup)))
-     ("n" . ,(make-raise-markup (* 0.6 size-factor) (make-natural-markup)))))
+#(define (raise-acc scaling-factor)
+   `(("f" . ,(make-raise-markup (* 0.3 scaling-factor) (make-flat-markup)))
+     ("ff" . ,(make-raise-markup (* 0.3 scaling-factor) (make-doubleflat-markup)))
+     ("s" . ,(make-raise-markup (* 0.6 scaling-factor) (make-sharp-markup)))
+     ("ss" . ,(make-raise-markup (* 0.3 scaling-factor) (make-doublesharp-markup)))
+     ("x" . ,(make-raise-markup (* 0.3 scaling-factor) (make-doublesharp-markup)))
+     ("n" . ,(make-raise-markup (* 0.6 scaling-factor) (make-natural-markup)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BASE MARKUP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-#(define (make-base-markup base size)
-   (let* ((size-factor (magstep size))
-          (base-list (parse-string-with-accidental base))
+#(define (make-base-markup base scaling-factor)
+   (let* ((base-list (parse-string-with-accidental base))
           (init-acc (first base-list))
           (end-acc (last base-list)))
      (cond
       (init-acc
        (make-concat-markup
-        (list (make-fontsize-markup -3 (assoc-ref (raise-acc size-factor) init-acc))
-          (make-hspace-markup (* 0.2 size-factor))
+        (list (make-fontsize-markup -3 (assoc-ref (raise-acc scaling-factor) init-acc))
+          (make-hspace-markup (* 0.2 scaling-factor))
           (second base-list))))
       (end-acc
        (make-concat-markup
         (list (second base-list)
-          (make-hspace-markup (* size-factor (big-char? (second base-list))))
-          (make-hspace-markup (* size-factor 0.2))
-          (make-fontsize-markup -3 (assoc-ref (raise-acc size-factor) end-acc)))))
+          (make-hspace-markup (* scaling-factor (big-char? (second base-list))))
+          (make-hspace-markup (* scaling-factor 0.2))
+          (make-fontsize-markup -3 (assoc-ref (raise-acc scaling-factor) end-acc)))))
       (else
        (make-concat-markup
         (list base
-          (make-hspace-markup (* size-factor
+          (make-hspace-markup (* scaling-factor
                                 (big-char? base)))))))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% QUALITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #(define (dim size)
    "Create circle markup for diminished quality."
-   (let* ((size-factor (magstep size))
-          (r (* 0.3 size-factor))
-          (th (* 0.1 size-factor)))
+   (let* ((scaling-factor (magstep size))
+          (r (* 0.3 scaling-factor))
+          (th (* 0.1 scaling-factor)))
      (make-translate-markup
       (cons r r)
       (make-draw-circle-markup r th #f))))
 
 #(define (half-dim size)
    "Create slashed circle markup for half-diminished quality."
-   (let* ((size-factor (magstep size))
-          (x (* size-factor 0.35))
-          (y (* size-factor 0.35))
-          (r (* size-factor 0.3))
-          (th (* size-factor 0.1)))
+   (let* ((scaling-factor (magstep size))
+          (x (* scaling-factor 0.35))
+          (y (* scaling-factor 0.35))
+          (r (* scaling-factor 0.3))
+          (th (* scaling-factor 0.1)))
      (make-translate-markup
       (cons x y)
       (make-combine-markup
        (make-draw-circle-markup r th #f)
-       (make-override-markup `(thickness . ,size-factor)
+       (make-override-markup `(thickness . ,scaling-factor)
          (make-combine-markup
           (make-draw-line-markup (cons (- x) (- y)))
           (make-draw-line-markup (cons x y))))))))
 
 #(define (aug size)
    "Create cross markup for augmented quality."
-   (let* ((size-factor (magstep size))
-          (x (* size-factor 0.35))
-          (y (* size-factor 0.35)))
-     (make-override-markup `(thickness . ,size-factor)
+   (let* ((scaling-factor (magstep size))
+          (x (* scaling-factor 0.35))
+          (y (* scaling-factor 0.35)))
+     (make-override-markup `(thickness . ,scaling-factor)
        (make-translate-markup (cons x y)
          (make-combine-markup
           (make-combine-markup
@@ -258,7 +257,7 @@ its string, otherwise @code{#t}."
            (make-draw-line-markup (cons x 0))
            (make-draw-line-markup (cons 0 y))))))))
 
-#(define (make-quality-markup size offset quality)
+#(define (make-quality-markup quality size offset)
    (cond
     ((string= quality "o") (make-raise-markup (* 1.25 offset) (dim size)))
     ((string= quality "h") (make-raise-markup (* 1.25 offset) (half-dim size)))
@@ -271,7 +270,7 @@ its string, otherwise @code{#t}."
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INVERSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #(define (format-figures figures size)
-   (let ((size-factor (magstep size)))
+   (let ((scaling-factor (magstep size)))
      (map (lambda (fig)
             (let* ((figure-list (parse-string-with-accidental fig))
                    (init-acc (car figure-list)))
@@ -279,13 +278,13 @@ its string, otherwise @code{#t}."
                (init-acc
                 (make-concat-markup
                  (list
-                  (make-fontsize-markup -3 (assoc-ref (raise-acc size-factor) init-acc))
-                  (make-hspace-markup (* 0.2 size-factor))
+                  (make-fontsize-markup -3 (assoc-ref (raise-acc scaling-factor) init-acc))
+                  (make-hspace-markup (* 0.2 scaling-factor))
                   (markup (second figure-list)))))
                (else (markup fig)))))
        figures)))
 
-#(define (make-inversion-markup size offset figures)
+#(define (make-inversion-markup figures size offset)
    (let ((formatted-figures (format-figures figures 1)))
      (make-fontsize-markup -3
        (make-override-markup `(baseline-skip . ,(* 1.4 (magstep size)))
@@ -294,7 +293,7 @@ its string, otherwise @code{#t}."
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SECONDARY RN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-#(define (make-secondary-markup size second-part)
+#(define (make-secondary-markup second-part scaling-factor)
    (make-concat-markup
     (list
      (car second-part)
@@ -302,11 +301,11 @@ its string, otherwise @code{#t}."
          empty-markup
          (make-concat-markup
           (list
-           (make-hspace-markup (* 0.2 (magstep size)))
+           (make-hspace-markup (* 0.2 scaling-factor))
            (if (car (parse-string-with-accidental (cadr second-part)))
-               (make-hspace-markup (* 0.2 (magstep size)))
+               (make-hspace-markup (* 0.2 scaling-factor))
                empty-markup)
-           (make-base-markup (cadr second-part) size)))))))
+           (make-base-markup (cadr second-part) scaling-factor)))))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SYNTHESIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -318,8 +317,11 @@ its string, otherwise @code{#t}."
           (base (car first-part))
           (quality (cadr first-part))
           (inversion (caddr first-part))
-          (base-markup (make-base-markup (car base) font-size))
-          (size-factor (magstep font-size))
+          ;; A multiplier for scaling quantities measured in staff-spaces to
+          ;; reflect font-size delta.  Spacing between elements is currently
+          ;; controlled by the magstep of the rN font-size.
+          (scaling-factor (magstep font-size))
+          (base-markup (make-base-markup (car base) scaling-factor))
           ;; height of inversion and quality determined by midline of base
           (dy (* 0.5
                 (interval-length
@@ -339,25 +341,25 @@ its string, otherwise @code{#t}."
              (make-concat-markup
               (list
                base-markup
-               (make-hspace-markup (* size-factor (big-char? (car base)))))))
+               (make-hspace-markup (* (big-char? (car base)) scaling-factor)))))
          (if (null? quality)
              empty-markup
              (make-concat-markup
               (list
-               (make-hspace-markup (* 0.1 size-factor))
-               (make-quality-markup font-size dy (car quality)))))
+               (make-hspace-markup (* 0.1 scaling-factor))
+               (make-quality-markup (car quality) font-size dy))))
          (if (null? inversion)
              empty-markup
              (make-concat-markup
-              (list (make-hspace-markup (* 0.1 size-factor))
-                (make-inversion-markup font-size dy inversion))))
+              (list (make-hspace-markup (* 0.1 scaling-factor))
+                (make-inversion-markup inversion font-size dy))))
          (if (null? second-part)
              empty-markup
              (make-concat-markup
               (list
                (if (= (length inversion) 1)
                    ;; allows slash to tuck under if single inversion figure
-                   (make-hspace-markup (* -0.2 size-factor))
+                   (make-hspace-markup (* -0.2 scaling-factor))
                    ;; slightly more space given to slash
-                   (make-hspace-markup (* 0.2 size-factor)))
-               (make-secondary-markup font-size second-part)))))))))
+                   (make-hspace-markup (* 0.2 scaling-factor)))
+               (make-secondary-markup second-part scaling-factor)))))))))

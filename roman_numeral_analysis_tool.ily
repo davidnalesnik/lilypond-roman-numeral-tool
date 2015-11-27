@@ -182,7 +182,7 @@ its string, otherwise @code{#t}."
       (else 0.0))))
 
 %% Create accidentals with appropriate vertical positioning.
-#(define (make-accidental-markup scaling-factor)
+#(define make-accidental-markup
    `(("f" . ,(make-general-align-markup Y DOWN (make-flat-markup)))
      ("ff" . ,(make-general-align-markup Y DOWN (make-doubleflat-markup)))
      ("s" . ,(make-general-align-markup Y -0.6 (make-sharp-markup)))
@@ -200,7 +200,7 @@ its string, otherwise @code{#t}."
       (init-acc
        (make-concat-markup
         (list (make-fontsize-markup -3
-                (assoc-ref (make-accidental-markup scaling-factor) init-acc))
+                (assoc-ref make-accidental-markup init-acc))
           (make-hspace-markup (* 0.2 scaling-factor))
           (second base-list))))
       (end-acc
@@ -209,7 +209,7 @@ its string, otherwise @code{#t}."
           (make-hspace-markup (* scaling-factor (big-char? (second base-list))))
           (make-hspace-markup (* scaling-factor 0.2))
           (make-fontsize-markup -3
-            (assoc-ref (make-accidental-markup scaling-factor) end-acc)))))
+            (assoc-ref make-accidental-markup end-acc)))))
       (else
        (make-concat-markup
         (list base
@@ -280,7 +280,7 @@ its string, otherwise @code{#t}."
                 (make-concat-markup
                  (list
                   (make-fontsize-markup -3
-                    (assoc-ref (make-accidental-markup scaling-factor) init-acc))
+                    (assoc-ref make-accidental-markup init-acc))
                   (make-hspace-markup (* 0.2 scaling-factor))
                   (markup (second figure-list)))))
                (else (markup fig)))))

@@ -12,14 +12,18 @@
 %% initial symbol to start with the quality or inversion, for example.  Elements
 %% must be separated by whitespace.
 %%
-%% Preceding or following a symbol with English alterations (f, s, ff, ss, x, n)
-%% will attach accidentals: "fVII" -> flat VII; "svi" -> sharp vi; "Af" -> A-flat;
-%% "As" A-sharp.  You may precede inversion numbers with alterations; "+" is not
+%% Notenames are represented by their English LilyPond names.  In addition, you
+%% may capitalize the name for a capitalized notename.
+%%
+%% Preceding a string representing a Roman numeral with English alterations
+%% (f, flat, s, sharp, ff, flatflat, ss, x, sharpsharp, natural)
+%% will attach accidentals, for example, "fVII" -> flat VII; "sharpvi" -> sharp vi.
+%% You may precede inversion numbers with alterations, though "+" is not
 %% presently supported.
 %%
-%% Qualities: use "o" for diminished, "h" for half-diminished,
-%% "+" for augmented, "f" for flat; other indications are possible such as
-%% combinations of "M" and "m" (M, m, MM7, Mm, mm, Mmm9, etc.); add, add6, etc.
+%% Qualities: use "o" for diminished, "h" for half-diminished, "+" for augmented,
+%% and "f" for flat.  Other indications are possible such as combinations of "M"
+%% and "m" (M, m, MM7, Mm, mm, Mmm9, etc.); add, add6, etc.
 %%
 %% To scale all numerals: \override  LyricText #'font-size = #2
 %% or \override  TextScript #'font-size = #2
@@ -114,52 +118,63 @@ inversion numbers."
 %% concerned with distinguishing Roman numerals from notenames, and with representing
 %% the presence and position of accidentals.
 
-%% The assumption is that accidentals only precede Roman numerals ("flat-II") and only
-%% follow the letter portion of a notename ("A-sharp").  In the future, we may represent
-%% notenames by their LilyPond names, allowing in addition for capitalization since
-%% lowercase and uppercase notenames are used to indicate chord quality.
+%% If a string belongs to the list of possible English notenames, we assume that
+%% it is a notename.  The notename will be typeset as uppercase or lowercase depending
+%% on the capitalization of the input string.
+
+%% If a string is not a notename, we look for an alteration prefix, never a suffix.
 
 %% The procedure parse-string-with-accidental breaks a string into a list representing
-%% initial/terminal accidentals and what is left.
+%% initial/terminal alterations and what is left.
 
-%% Note names and names of accidentals are based on English names at the moment.
+%% Notenames and names of accidentals are based on English names.  Other
+%% languages may be used by adding variables modeled after english-notenames and
+%% english-alterations, and changing the definitions of notenames and alterations to
+%% point to these new variables.
 
-#(define notenames "AaBbCcDdEeFfGg")
+#(define english-notenames
+   (map (lambda (p) (symbol->string (car p)))
+     (assoc-get 'english language-pitch-names)))
 
-%% Arranged in descending length so there is no need to search for longest match in
-%% parse-string-with-accidental.
-#(define alterations '("ff" "ss" "f" "s" "x" "n"))
+#(define notenames english-notenames)
 
-%{
 #(define (notename? str)
-   (and
-    ;; first character is in list of note names
-    (number? (string-index str (string->char-set notenames) 0 1))
-    ;; All of remaining characters match an entry in alteration list
-    (or (= (string-length str) 1)
-        (and (find (lambda (s) (string= s (string-drop str 1))) alterations)
-             #t))))
-%}
+   (let ((lowercased (format #f "~(~a~)" str)))
+     (list? (member lowercased notenames))))
+
+%% Groupings sharing an initial character are arranged in descending length so there
+%% is no need to search for longest match in parse-string-with-accidental.
+#(define english-alterations '("flatflat" "flat" "ff" "f"
+                        "sharpsharp" "sharp" "ss" "s" "x"
+                        "natural" "n"))
+
+#(define alterations english-alterations)
+
+#(define (parse-notename str)
+   "Given a notename, return a list consisting of the general name followed by
+the alteration or @code{#f} if none."
+   (let* ((first-char (string-take str 1))
+          (all-but-first (string-drop str 1))
+          (all-but-first (if (string-prefix? "-" all-but-first)
+                             (string-drop all-but-first 1)
+                             all-but-first))
+          (all-but-first (if (string-null? all-but-first) #f all-but-first)))
+     (list first-char all-but-first)))
+
 #(define (parse-string-with-accidental str)
    "Given @var{str}, return a list in this format: (initial-accidental?
 notename-or-figure-or-RN terminal-accidental?) If an accidental is found, include
 its string, otherwise @code{#t}."
    (if (not (string-null? str))
-       (let* ((first-char (string-take str 1))
-              (all-but-first (string-drop str 1))
-              (all-but-first (if (string-null? all-but-first) #f all-but-first)))
-         ;; Is it a notename with optional accidental?
-         (if (and (string-contains notenames first-char)
-                  (or (not all-but-first)
-                      (find (lambda (s) (string= s all-but-first)) alterations)))
-             (list #f first-char all-but-first)
-             ;; Is it a Roman numeral or figure preceded by an accidental?
-             (let* ((accidental-prefix
-                     (find (lambda (s) (string-prefix? s str)) alterations))
-                    (rest (if accidental-prefix
-                              (string-drop str (string-length accidental-prefix))
-                              str)))
-               (list accidental-prefix rest #f))))))
+       (if (notename? str)
+           (cons #f (parse-notename str))
+           ;; Is it a Roman numeral or figure preceded by an accidental?
+           (let* ((accidental-prefix
+                   (find (lambda (s) (string-prefix? s str)) alterations))
+                  (rest (if accidental-prefix
+                            (string-drop str (string-length accidental-prefix))
+                            str)))
+             (list accidental-prefix rest #f)))))
 %{
 #(define (inversion? str)
    "Check to see if a string contains a digit.  If so, it is an inversion figure."
@@ -184,11 +199,16 @@ its string, otherwise @code{#t}."
 %% Create accidentals with appropriate vertical positioning.
 #(define make-accidental-markup
    `(("f" . ,(make-general-align-markup Y DOWN (make-flat-markup)))
+     ("flat" . ,(make-general-align-markup Y DOWN (make-flat-markup)))
      ("ff" . ,(make-general-align-markup Y DOWN (make-doubleflat-markup)))
+     ("flatflat" . ,(make-general-align-markup Y DOWN (make-doubleflat-markup)))
      ("s" . ,(make-general-align-markup Y -0.6 (make-sharp-markup)))
+     ("sharp" . ,(make-general-align-markup Y -0.6 (make-sharp-markup)))
      ("ss" . ,(make-general-align-markup Y DOWN (make-doublesharp-markup)))
      ("x" . ,(make-general-align-markup Y DOWN (make-doublesharp-markup)))
-     ("n" . ,(make-general-align-markup Y -0.6 (make-natural-markup)))))
+     ("sharpsharp" . ,(make-general-align-markup Y DOWN (make-doublesharp-markup)))
+     ("n" . ,(make-general-align-markup Y -0.6 (make-natural-markup)))
+     ("natural" . ,(make-general-align-markup Y -0.6 (make-natural-markup)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BASE MARKUP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

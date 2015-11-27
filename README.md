@@ -1,4 +1,4 @@
-Lilypond Roman numeral analysis tool
+LilyPond Roman numeral analysis tool
 ====================================
 
 ## What's this?
@@ -30,13 +30,18 @@ tonicized Roman numeral or note-name.  Usually, you can skip unnecessary items,
 though including an empty string (`""`) as a spacer may be needed in some
 ambiguous cases.  Components must be separated by whitespace.
 
-Preceding a Roman numeral or following a note-name with `f`, `s`, `ff`,
-`ss`, `x`, or `n` will attach accidentals.  Examples: `fVII` &#x2192;
-"flat VII"; `svi` &#x2192; "sharp vi"; `Af` &#x2192; A-flat;
-`As` &#x2192; A-sharp.
+To indicate a note-name, simply write the name used for English input in
+LilyPond.  You may capitalize the first letter for a capital in the output.
+To put an alteration before a Roman numeral, prefix the numeral
+without space with the LilyPond English alteration name: `f`, `flat`, `s`,
+`sharp`, `s`, `x`, `sharpsharp`, `n`, `natural`.  Examples: `fVII` &#x2192;
+"flat VII"; `sharpvi` &#x2192; "sharp vi".
 
 These symbols may also precede inversion figures: `f6`, `s11`, etc.  Use of
-`+` for a raised figure is on the todo-list.
+`+` for a raised figure is not currently supported.
+
+At the moment, only English naming is supported.  It is possible to modify
+the code to accomodate other languages.
 
 Qualities are indicated by `o` for diminished, `h` for half-diminished,
 `+` for augmented, and `f` for flat.  Other possibilities include

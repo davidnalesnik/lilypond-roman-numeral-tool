@@ -144,9 +144,10 @@ inversion numbers."
 
 %% Groupings sharing an initial character are arranged in descending length so there
 %% is no need to search for longest match in parse-string-with-accidental.
-#(define english-alterations '("flatflat" "flat" "ff" "f"
-                        "sharpsharp" "sharp" "ss" "s" "x"
-                        "natural" "n"))
+#(define english-alterations
+   '("flatflat" "flat" "ff" "f"
+      "sharpsharp" "sharp" "ss" "s" "x"
+      "natural" "n"))
 
 #(define alterations english-alterations)
 
@@ -290,8 +291,12 @@ its string, otherwise @code{#t}."
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INVERSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+#(define (hyphen-to-en-dash str)
+   (string-regexp-substitute "-" "–" str))
+
 #(define (format-figures figures size)
-   (let ((scaling-factor (magstep size)))
+   (let ((scaling-factor (magstep size))
+         (figures (map hyphen-to-en-dash figures)))
      (map (lambda (fig)
             (let* ((figure-list (parse-string-with-accidental fig))
                    (init-acc (car figure-list)))

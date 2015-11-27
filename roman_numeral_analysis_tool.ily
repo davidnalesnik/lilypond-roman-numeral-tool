@@ -181,15 +181,14 @@ its string, otherwise @code{#t}."
       ;((string= last-char "ss") 0.2) ; double-sharp
       (else 0.0))))
 
-%% The default vertical position of accidental glyphs does not look right at all.
-%% Corrections are located here.  Should we align using \general-align?
-#(define (raise-acc scaling-factor)
-   `(("f" . ,(make-raise-markup (* 0.3 scaling-factor) (make-flat-markup)))
-     ("ff" . ,(make-raise-markup (* 0.3 scaling-factor) (make-doubleflat-markup)))
-     ("s" . ,(make-raise-markup (* 0.6 scaling-factor) (make-sharp-markup)))
-     ("ss" . ,(make-raise-markup (* 0.3 scaling-factor) (make-doublesharp-markup)))
-     ("x" . ,(make-raise-markup (* 0.3 scaling-factor) (make-doublesharp-markup)))
-     ("n" . ,(make-raise-markup (* 0.6 scaling-factor) (make-natural-markup)))))
+%% Create accidentals with appropriate vertical positioning.
+#(define (make-accidental-markup scaling-factor)
+   `(("f" . ,(make-general-align-markup Y DOWN (make-flat-markup)))
+     ("ff" . ,(make-general-align-markup Y DOWN (make-doubleflat-markup)))
+     ("s" . ,(make-general-align-markup Y -0.6 (make-sharp-markup)))
+     ("ss" . ,(make-general-align-markup Y DOWN (make-doublesharp-markup)))
+     ("x" . ,(make-general-align-markup Y DOWN (make-doublesharp-markup)))
+     ("n" . ,(make-general-align-markup Y -0.6 (make-natural-markup)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BASE MARKUP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -200,7 +199,8 @@ its string, otherwise @code{#t}."
      (cond
       (init-acc
        (make-concat-markup
-        (list (make-fontsize-markup -3 (assoc-ref (raise-acc scaling-factor) init-acc))
+        (list (make-fontsize-markup -3
+                (assoc-ref (make-accidental-markup scaling-factor) init-acc))
           (make-hspace-markup (* 0.2 scaling-factor))
           (second base-list))))
       (end-acc
@@ -208,7 +208,8 @@ its string, otherwise @code{#t}."
         (list (second base-list)
           (make-hspace-markup (* scaling-factor (big-char? (second base-list))))
           (make-hspace-markup (* scaling-factor 0.2))
-          (make-fontsize-markup -3 (assoc-ref (raise-acc scaling-factor) end-acc)))))
+          (make-fontsize-markup -3
+            (assoc-ref (make-accidental-markup scaling-factor) end-acc)))))
       (else
        (make-concat-markup
         (list base
@@ -278,7 +279,8 @@ its string, otherwise @code{#t}."
                (init-acc
                 (make-concat-markup
                  (list
-                  (make-fontsize-markup -3 (assoc-ref (raise-acc scaling-factor) init-acc))
+                  (make-fontsize-markup -3
+                    (assoc-ref (make-accidental-markup scaling-factor) init-acc))
                   (make-hspace-markup (* 0.2 scaling-factor))
                   (markup (second figure-list)))))
                (else (markup fig)))))

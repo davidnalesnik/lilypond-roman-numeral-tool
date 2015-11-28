@@ -216,26 +216,30 @@ its string, otherwise @code{#t}."
 #(define (make-base-markup base scaling-factor)
    (let* ((base-list (parse-string-with-accidental base))
           (init-acc (first base-list))
-          (end-acc (last base-list)))
+          (end-acc (last base-list))
+          (extra-space-right (big-char? (second base-list))))
      (cond
       (init-acc
        (make-concat-markup
-        (list (make-fontsize-markup -3
-                (assoc-ref make-accidental-markup init-acc))
-          (make-hspace-markup (* 0.2 scaling-factor))
-          (second base-list))))
+        (list
+         (make-fontsize-markup -3
+           (assoc-ref make-accidental-markup init-acc))
+         (make-hspace-markup (* 0.2 scaling-factor))
+         (second base-list))))
       (end-acc
        (make-concat-markup
-        (list (second base-list)
-          (make-hspace-markup (* scaling-factor (big-char? (second base-list))))
-          (make-hspace-markup (* scaling-factor 0.2))
-          (make-fontsize-markup -3
-            (assoc-ref make-accidental-markup end-acc)))))
+        (list
+         (second base-list)
+         (make-hspace-markup (* (+ 0.2 extra-space-right) scaling-factor))
+         (make-fontsize-markup -3
+           (assoc-ref make-accidental-markup end-acc)))))
       (else
-       (make-concat-markup
-        (list base
-          (make-hspace-markup (* scaling-factor
-                                (big-char? base)))))))))
+       (if (> extra-space-right 0.0)
+           (make-concat-markup
+            (list
+             base
+             (make-hspace-markup (* scaling-factor extra-space-right))))
+           base)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% QUALITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -348,48 +352,50 @@ its string, otherwise @code{#t}."
           ;; reflect font-size delta.  Spacing between elements is currently
           ;; controlled by the magstep of the rN font-size.
           (scaling-factor (magstep font-size))
-          (base-markup (make-base-markup (car base) scaling-factor))
+          (base-markup
+           (if (or (null? base) (string-null? (car base))) ; "" used as spacer
+               #f
+               (make-base-markup (car base) scaling-factor)))
           ;; height of inversion and quality determined by midline of base
           (dy (* 0.5
                 (interval-length
                  (ly:stencil-extent
                   (interpret-markup
-                   layout props (if (or (null? base)
-                                        (string-null? (car base)))
-                                    "/"
-                                    base-markup))
-                  Y)))))
+                   layout props (if (markup? base-markup)
+                                    base-markup "/"))
+                  Y))))
+          (quality-markup
+           (if (null? quality)
+               #f
+               (make-concat-markup
+                (list
+                 (make-hspace-markup (* 0.1 scaling-factor))
+                 (make-quality-markup (car quality) font-size dy)))))
+          (inversion-markup
+           (if (null? inversion)
+               #f
+               (make-concat-markup
+                (list (make-hspace-markup (* 0.1 scaling-factor))
+                  (make-inversion-markup inversion font-size dy)))))
+          (second-part
+           (if (null? second-part)
+               #f
+               (make-concat-markup
+                (list
+                 (if (= (length inversion) 1)
+                     ;; allows slash to tuck under if single inversion figure
+                     (make-hspace-markup (* -0.2 scaling-factor))
+                     ;; slightly more space given to slash
+                     (make-hspace-markup (* 0.2 scaling-factor)))
+                 (make-secondary-markup second-part scaling-factor)))))
+          (visible-markups
+           (filter markup?
+                   (list base-markup quality-markup inversion-markup second-part))))
+
+     ;(pretty-print visible-markups) (newline)
 
      (interpret-markup layout props
-       (make-concat-markup
-        (list
-         (if (or (null? base) (string-null? (car base))) ; "" used as spacer
-             empty-markup
-             (make-concat-markup
-              (list
-               base-markup
-               (make-hspace-markup (* (big-char? (car base)) scaling-factor)))))
-         (if (null? quality)
-             empty-markup
-             (make-concat-markup
-              (list
-               (make-hspace-markup (* 0.1 scaling-factor))
-               (make-quality-markup (car quality) font-size dy))))
-         (if (null? inversion)
-             empty-markup
-             (make-concat-markup
-              (list (make-hspace-markup (* 0.1 scaling-factor))
-                (make-inversion-markup inversion font-size dy))))
-         (if (null? second-part)
-             empty-markup
-             (make-concat-markup
-              (list
-               (if (= (length inversion) 1)
-                   ;; allows slash to tuck under if single inversion figure
-                   (make-hspace-markup (* -0.2 scaling-factor))
-                   ;; slightly more space given to slash
-                   (make-hspace-markup (* 0.2 scaling-factor)))
-               (make-secondary-markup second-part scaling-factor)))))))))
+       (make-concat-markup visible-markups))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% KEY INDICATIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -398,12 +404,12 @@ its string, otherwise @code{#t}."
 #(define-markup-command (keyIndication layout props arg) (markup?)
    #:properties ((font-size 1))
    (let* ((scaling-factor (magstep font-size))
-          (divide-by-spaces (string-match "([^[:space:]]+)([[:space:]]+)$" arg))
-          (base (if divide-by-spaces
-                    (match:substring divide-by-spaces 1)
+          (divide-at-spaces (string-match "([^[:space:]]+)([[:space:]]+)$" arg))
+          (base (if divide-at-spaces
+                    (match:substring divide-at-spaces 1)
                     arg))
-          (trailing-spaces (if divide-by-spaces
-                               (match:substring divide-by-spaces 2)
+          (trailing-spaces (if divide-at-spaces
+                               (match:substring divide-at-spaces 2)
                                empty-markup)))
      (interpret-markup layout props
        (make-concat-markup

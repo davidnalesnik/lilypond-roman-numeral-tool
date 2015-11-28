@@ -14,6 +14,7 @@ bassline = \relative c' {
 }
 
 analysis = \lyricmode {
+  \override LyricText.self-alignment-X = #-0.6
   \offset StanzaNumber.X-offset #-3
   \set stanza  = #"G:"
   \markup \rN { I }

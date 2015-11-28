@@ -390,3 +390,25 @@ its string, otherwise @code{#t}."
                    ;; slightly more space given to slash
                    (make-hspace-markup (* 0.2 scaling-factor)))
                (make-secondary-markup second-part scaling-factor)))))))))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% KEY INDICATIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#(use-modules (ice-9 regex))
+
+#(define-markup-command (keyIndication layout props arg) (markup?)
+   #:properties ((font-size 1))
+   (let* ((scaling-factor (magstep font-size))
+          (divide-by-spaces (string-match "([^[:space:]]+)([[:space:]]+)$" arg))
+          (base (if divide-by-spaces
+                    (match:substring divide-by-spaces 1)
+                    arg))
+          (trailing-spaces (if divide-by-spaces
+                               (match:substring divide-by-spaces 2)
+                               empty-markup)))
+     (interpret-markup layout props
+       (make-concat-markup
+        (list
+         (make-base-markup base scaling-factor)
+         (make-hspace-markup (* 0.2 scaling-factor))
+         ":"
+         trailing-spaces)))))

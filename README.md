@@ -54,4 +54,31 @@ or `\override TextScript #'font-size = #2`
 To scale individual numerals:
 `\markup \override #'(font-size . 2) \rN { ... }`
 
+### Key Indications
+
+Key indications are easily created in a `Lyrics` context using stanza
+numbers.  The `\rN` command makes it easy to create note-names with sharps
+or flats.  To produce the typical key-followed-by-colon notation, you can use
+the markup command `\keyIndication` like so:
+
+`\set stanza = \markup \keyIndication { B-flat }`
+
+To change the position of the key indication you may write
+
+`\override StanzaNumber.X-offset = #-5`
+
+or
+
+`\offset StanzaNumber.X-offset #-1`
+
+Alternately, you can add spaces after the input string like so:
+
+`\set stanza = \markup \keyIndication { "b-flat     " }`
+
+This method, however, may require an additional override for good spacing:
+
+`\override StanzaNumber.self-alignment-X = #RIGHT`
+
+## Example
+
 The file `example.ly` gives an illustration of usage.

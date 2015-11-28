@@ -14,9 +14,10 @@ bassline = \relative c' {
 }
 
 analysis = \lyricmode {
-  \set stanza = #"G:     " % use spaces to adjust position of key indication
+  \offset StanzaNumber.X-offset #-3
+  \set stanza  = #"G:"
   \markup \rN { I }
-  \markup \rN { V 6 5 3 }
+  \markup \rN { V 6 5 }
   \markup \rN { vii o 4 3 / IV }
   \markup \rN { IV 6 }
   \markup \rN { ii h 4 3 }
@@ -34,7 +35,8 @@ analysis = \lyricmode {
   \layout {
     \context {
       \Score
-      \override SpacingSpanner #'shortest-duration-space = #6
+      % to control line spacing
+      \override SpacingSpanner.shortest-duration-space = #6
     }
   }
 }

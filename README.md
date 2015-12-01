@@ -99,14 +99,14 @@ or
 
 Note-names may be combined with Roman numerals.  For example,
 
-`\markup \rN { V 7 \ B-flat }`
+`\markup \rN { V 7 / B-flat }`
 
 Note that in all examples shown, the `rN` command is preceded by `\markup`.  As
 we produce Roman numerals as LilyPond markups, this is unavoidable.
 
 ## Changing defaults
 
-The appearance of Roman numerals may be changing in a host of ways common to
+The appearance of Roman numerals may be changed in a host of ways common to
 other such objects in LilyPond.  It is beyond the scope of this document to
 cover these, but mention will be made of the importance of the *context* in
 which the notation was created.

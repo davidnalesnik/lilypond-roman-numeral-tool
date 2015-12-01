@@ -104,7 +104,7 @@ inversion numbers."
            (list (list (car arg)) '()))) ;; TODO figure out which is given
       ((= 2 len) (list (list (car arg)) (cdr arg))))))
 
-#(define (base-quality-inversion symbols)
+#(define (base-quality-figures symbols)
    ;; given (vii o 4 3) --> ((vii o) (4 3)) --> ((vii) (o) (4 3))
    ;; (4 3) --> (() (4 3)) --> (() () (4 3))
    ;; () --> (() ()) --> (() () ())
@@ -187,7 +187,7 @@ its string, otherwise @code{#t}."
 %% We need to add extra space after certain characters in the default LilyPond
 %% font to avoid overlaps with characters that follow.  Several of these kernings
 %% don't seem to be necessary anymore, and have been commented out.
-#(define (big-char? arg)
+#(define (get-extra-kerning arg)
    (let ((last-char (string-take-right arg 1)))
      (cond
       ((string= last-char "V") 0.1)
@@ -217,7 +217,7 @@ its string, otherwise @code{#t}."
    (let* ((base-list (parse-string-with-accidental base))
           (init-acc (first base-list))
           (end-acc (last base-list))
-          (extra-space-right (big-char? (second base-list))))
+          (extra-space-right (get-extra-kerning (second base-list))))
      (cond
       (init-acc
        (make-concat-markup
@@ -238,27 +238,32 @@ its string, otherwise @code{#t}."
            (make-concat-markup
             (list
              base
-             (make-hspace-markup (* scaling-factor extra-space-right))))
+             (make-hspace-markup (* extra-space-right scaling-factor))))
            base)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% QUALITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-#(define (dim size)
+%% \rN calls these functions using the font-size of the base.  Symbols representing
+%% diminished, half-diminished, and augmented qualities are drawn to rest atop of
+%% baseline (alignment direction = DOWN), and moved by make-quality-markup to their
+%% final vertical position.
+
+#(define (dim font-size)
    "Create circle markup for diminished quality."
-   (let* ((scaling-factor (magstep size))
+   (let* ((scaling-factor (magstep font-size))
           (r (* 0.3 scaling-factor))
           (th (* 0.1 scaling-factor)))
      (make-translate-markup
       (cons r r)
       (make-draw-circle-markup r th #f))))
 
-#(define (half-dim size)
+#(define (half-dim font-size)
    "Create slashed circle markup for half-diminished quality."
-   (let* ((scaling-factor (magstep size))
-          (x (* scaling-factor 0.35))
-          (y (* scaling-factor 0.35))
-          (r (* scaling-factor 0.3))
-          (th (* scaling-factor 0.1)))
+   (let* ((scaling-factor (magstep font-size))
+          (x (* 0.35 scaling-factor))
+          (y (* 0.35 scaling-factor))
+          (r (* 0.3 scaling-factor))
+          (th (* 0.1 scaling-factor)))
      (make-translate-markup
       (cons x y)
       (make-combine-markup
@@ -268,11 +273,11 @@ its string, otherwise @code{#t}."
           (make-draw-line-markup (cons (- x) (- y)))
           (make-draw-line-markup (cons x y))))))))
 
-#(define (aug size)
+#(define (aug font-size)
    "Create cross markup for augmented quality."
-   (let* ((scaling-factor (magstep size))
-          (x (* scaling-factor 0.35))
-          (y (* scaling-factor 0.35)))
+   (let* ((scaling-factor (magstep font-size))
+          (x (* 0.35 scaling-factor))
+          (y (* 0.35 scaling-factor)))
      (make-override-markup `(thickness . ,scaling-factor)
        (make-translate-markup (cons x y)
          (make-combine-markup
@@ -283,13 +288,17 @@ its string, otherwise @code{#t}."
            (make-draw-line-markup (cons x 0))
            (make-draw-line-markup (cons 0 y))))))))
 
-#(define (make-quality-markup quality size offset)
+%% TODO: more "science" in the vertical position of quality markers.
+#(define (make-quality-markup quality font-size offset)
    (cond
-    ((string= quality "o") (make-raise-markup (* 1.25 offset) (dim size)))
-    ((string= quality "h") (make-raise-markup (* 1.25 offset) (half-dim size)))
-    ((string= quality "+") (make-raise-markup (* 1.25 offset) (aug size)))
-    ((string= quality "f") (make-raise-markup (* 1.5 offset)
-                             (make-fontsize-markup (- size 5)
+    ;; The quantity 'offset' by itself will cause symbol to rest on the midline.  We
+    ;; enlarge offset so that the symbol will be more centered alongside a possible
+    ;; figure.  (Topmost figure rests on midline.)
+    ((string= quality "o") (make-raise-markup (* offset 1.25) (dim font-size)))
+    ((string= quality "h") (make-raise-markup (* offset 1.25) (half-dim font-size)))
+    ((string= quality "+") (make-raise-markup (* offset 1.25) (aug font-size)))
+    ((string= quality "f") (make-raise-markup (* offset 1.5)
+                             (make-fontsize-markup -4
                                (make-flat-markup))))
     (else (make-raise-markup offset (make-fontsize-markup -3 quality)))))
 
@@ -298,8 +307,8 @@ its string, otherwise @code{#t}."
 #(define (hyphen-to-en-dash str)
    (string-regexp-substitute "-" "–" str))
 
-#(define (format-figures figures size)
-   (let ((scaling-factor (magstep size))
+#(define (format-figures figures font-size)
+   (let ((scaling-factor (magstep font-size))
          (figures (map hyphen-to-en-dash figures)))
      (map (lambda (fig)
             (let* ((figure-list (parse-string-with-accidental fig))
@@ -308,19 +317,21 @@ its string, otherwise @code{#t}."
                (init-acc
                 (make-concat-markup
                  (list
-                  (make-fontsize-markup -3
+                  (make-fontsize-markup font-size
                     (assoc-ref make-accidental-markup init-acc))
                   (make-hspace-markup (* 0.2 scaling-factor))
-                  (markup (second figure-list)))))
-               (else (markup fig)))))
+                  (make-fontsize-markup font-size (second figure-list)))))
+               (else (make-fontsize-markup font-size fig)))))
        figures)))
 
-#(define (make-inversion-markup figures size offset)
-   (let ((formatted-figures (format-figures figures 1)))
-     (make-fontsize-markup -3
-       (make-override-markup `(baseline-skip . ,(* 1.4 (magstep size)))
-         (make-raise-markup offset
-           (make-right-column-markup formatted-figures))))))
+#(define (make-figures-markup figures font-size offset)
+   ;; Without offset the column of figures would be positioned such that the
+   ;; topmost figure rests on the baseline. Adding offset causes the upper figure
+   ;; to rest on the midline of base.
+   (let ((formatted-figures (format-figures figures -3)))
+     (make-override-markup `(baseline-skip . ,(* 1.4 (magstep font-size)))
+       (make-raise-markup offset
+         (make-right-column-markup formatted-figures)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SECONDARY RN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -343,11 +354,11 @@ its string, otherwise @code{#t}."
 #(define-markup-command (rN layout props symbols) (markup-list?)
    #:properties ((font-size 1))
    (let* ((split (split-list symbols '("/")))
-          (first-part (base-quality-inversion (car split)))
+          (first-part (base-quality-figures (car split)))
           (second-part (cadr split)) ; slash and what follows
           (base (car first-part))
           (quality (cadr first-part))
-          (inversion (caddr first-part))
+          (figures (caddr first-part))
           ;; A multiplier for scaling quantities measured in staff-spaces to
           ;; reflect font-size delta.  Spacing between elements is currently
           ;; controlled by the magstep of the rN font-size.
@@ -356,7 +367,7 @@ its string, otherwise @code{#t}."
            (if (or (null? base) (string-null? (car base))) ; "" used as spacer
                #f
                (make-base-markup (car base) scaling-factor)))
-          ;; height of inversion and quality determined by midline of base
+          ;; height of figures and quality determined by midline of base
           (dy (* 0.5
                 (interval-length
                  (ly:stencil-extent
@@ -371,26 +382,26 @@ its string, otherwise @code{#t}."
                 (list
                  (make-hspace-markup (* 0.1 scaling-factor))
                  (make-quality-markup (car quality) font-size dy)))))
-          (inversion-markup
-           (if (null? inversion)
+          (figures-markup
+           (if (null? figures)
                #f
                (make-concat-markup
                 (list (make-hspace-markup (* 0.1 scaling-factor))
-                  (make-inversion-markup inversion font-size dy)))))
-          (second-part
+                  (make-figures-markup figures font-size dy)))))
+          (secondary-markup
            (if (null? second-part)
                #f
                (make-concat-markup
                 (list
-                 (if (= (length inversion) 1)
-                     ;; allows slash to tuck under if single inversion figure
+                 (if (= (length figures) 1)
+                     ;; allows slash to tuck under if single figure
                      (make-hspace-markup (* -0.2 scaling-factor))
                      ;; slightly more space given to slash
                      (make-hspace-markup (* 0.2 scaling-factor)))
                  (make-secondary-markup second-part scaling-factor)))))
           (visible-markups
            (filter markup?
-                   (list base-markup quality-markup inversion-markup second-part))))
+                   (list base-markup quality-markup figures-markup secondary-markup))))
 
      ;(pretty-print visible-markups) (newline)
 

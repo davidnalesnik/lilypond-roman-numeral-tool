@@ -31,13 +31,21 @@ analysis = \lyricmode {
 \score {
   \new Staff <<
     \new Voice = "bass" { \bassline }
-    \new Lyrics \lyricsto "bass" { \analysis }
+    \new Lyrics \with {
+      % to control distance of analysis from staff
+      \override VerticalAxisGroup.nonstaff-relatedstaff-spacing = #'((basic-distance . 6.5))
+    } \lyricsto "bass" { \analysis }
   >>
   \layout {
     \context {
       \Score
-      % to control line spacing
+      % to control horizontal spacing
       \override SpacingSpanner.shortest-duration-space = #6
+    }
+    \context {
+      \Lyrics
+      % to control global size
+      %\override LyricText.font-size = #-1
     }
   }
 }

@@ -251,7 +251,7 @@ its string, otherwise @code{#t}."
 #(define (dim font-size)
    "Create circle markup for diminished quality."
    (let* ((scaling-factor (magstep font-size))
-          (r (* 0.3 scaling-factor))
+          (r (* 0.48 scaling-factor))
           (th (* 0.1 scaling-factor)))
      (make-translate-markup
       (cons r r)
@@ -260,9 +260,9 @@ its string, otherwise @code{#t}."
 #(define (half-dim font-size)
    "Create slashed circle markup for half-diminished quality."
    (let* ((scaling-factor (magstep font-size))
-          (x (* 0.35 scaling-factor))
-          (y (* 0.35 scaling-factor))
-          (r (* 0.3 scaling-factor))
+          (x (* 0.56 scaling-factor))
+          (y (* 0.56 scaling-factor))
+          (r (* 0.48 scaling-factor))
           (th (* 0.1 scaling-factor)))
      (make-translate-markup
       (cons x y)
@@ -276,8 +276,8 @@ its string, otherwise @code{#t}."
 #(define (aug font-size)
    "Create cross markup for augmented quality."
    (let* ((scaling-factor (magstep font-size))
-          (x (* 0.35 scaling-factor))
-          (y (* 0.35 scaling-factor)))
+          (x (* 0.56 scaling-factor))
+          (y (* 0.56 scaling-factor)))
      (make-override-markup `(thickness . ,scaling-factor)
        (make-translate-markup (cons x y)
          (make-combine-markup
@@ -300,7 +300,7 @@ its string, otherwise @code{#t}."
     ((string= quality "f") (make-raise-markup (* offset 1.5)
                              (make-fontsize-markup -4
                                (make-flat-markup))))
-    (else (make-raise-markup offset (make-fontsize-markup -3 quality)))))
+    (else (make-raise-markup offset (make-fontsize-markup font-size quality)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #(define figure-alterations '("flat" "f" "sharp" "s" "+"))
@@ -330,14 +330,13 @@ its string, otherwise @code{#t}."
          (figures (map hyphen-to-en-dash figures)))
      (map (lambda (fig)
             (let* ((figure-list (parse-figure-with-alteration fig))
-                   (init-acc (car figure-list)))
-              (display figure-list) (newline)
+                   (alteration (car figure-list)))
               (cond
-               (init-acc
+               (alteration
                 (make-concat-markup
                  (list
                   (make-fontsize-markup (- font-size 2) ;; + looks puny
-                    (assoc-ref make-figure-markup init-acc))
+                    (assoc-ref make-figure-markup alteration))
                   (make-hspace-markup (* 0.2 scaling-factor))
                   (make-fontsize-markup font-size (second figure-list)))))
                (else (make-fontsize-markup font-size fig)))))
@@ -386,7 +385,8 @@ its string, otherwise @code{#t}."
            (if (or (null? base) (string-null? (car base))) ; "" used as spacer
                #f
                (make-base-markup (car base) scaling-factor)))
-          ;; height of figures and quality determined by midline of base
+          ;; The height of figures and quality determined by midline of base.  If
+          ;; there is no base, use forward slash as a representative character.
           (dy (* 0.5
                 (interval-length
                  (ly:stencil-extent
@@ -400,7 +400,7 @@ its string, otherwise @code{#t}."
                (make-concat-markup
                 (list
                  (make-hspace-markup (* 0.1 scaling-factor))
-                 (make-quality-markup (car quality) font-size dy)))))
+                 (make-quality-markup (car quality) -3 dy)))))
           (figures-markup
            (if (null? figures)
                #f

@@ -248,7 +248,7 @@ its string, otherwise @code{#t}."
 %% baseline (alignment direction = DOWN), and moved by make-quality-markup to their
 %% final vertical position.
 
-#(define (dim font-size)
+#(define (make-diminished-markup font-size)
    "Create circle markup for diminished quality."
    (let* ((scaling-factor (magstep font-size))
           (r (* 0.48 scaling-factor))
@@ -257,7 +257,7 @@ its string, otherwise @code{#t}."
       (cons r r)
       (make-draw-circle-markup r th #f))))
 
-#(define (half-dim font-size)
+#(define (make-half-diminished-markup font-size)
    "Create slashed circle markup for half-diminished quality."
    (let* ((scaling-factor (magstep font-size))
           (x (* 0.56 scaling-factor))
@@ -273,7 +273,7 @@ its string, otherwise @code{#t}."
           (make-draw-line-markup (cons (- x) (- y)))
           (make-draw-line-markup (cons x y))))))))
 
-#(define (aug font-size)
+#(define (make-augmented-markup font-size)
    "Create cross markup for augmented quality."
    (let* ((scaling-factor (magstep font-size))
           (x (* 0.56 scaling-factor))
@@ -294,9 +294,9 @@ its string, otherwise @code{#t}."
     ;; The quantity 'offset' by itself will cause symbol to rest on the midline.  We
     ;; enlarge offset so that the symbol will be more centered alongside a possible
     ;; figure.  (Topmost figure rests on midline.)
-    ((string= quality "o") (make-raise-markup (* offset 1.25) (dim font-size)))
-    ((string= quality "h") (make-raise-markup (* offset 1.25) (half-dim font-size)))
-    ((string= quality "+") (make-raise-markup (* offset 1.25) (aug font-size)))
+    ((string= quality "o") (make-raise-markup (* offset 1.25) (make-diminished-markup font-size)))
+    ((string= quality "h") (make-raise-markup (* offset 1.25) (make-half-diminished-markup font-size)))
+    ((string= quality "+") (make-raise-markup (* offset 1.25) (make-augmented-markup font-size)))
     ((string= quality "f") (make-raise-markup (* offset 1.5)
                              (make-fontsize-markup -4
                                (make-flat-markup))))
@@ -305,12 +305,12 @@ its string, otherwise @code{#t}."
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #(define figure-alterations '("flat" "f" "sharp" "s" "+"))
 
-#(define make-figure-markup
+#(define (make-figure-markup font-size)
    `(("f" . ,(make-general-align-markup Y DOWN (make-flat-markup)))
      ("flat" . ,(make-general-align-markup Y DOWN (make-flat-markup)))
      ("s" . ,(make-general-align-markup Y -0.6 (make-sharp-markup)))
      ("sharp" . ,(make-general-align-markup Y -0.6 (make-sharp-markup)))
-     ("+" . ,(markup "+"))))
+     ("+" . ,(make-general-align-markup Y -1.5 (make-augmented-markup (+ font-size 2))))))
 
 #(define (parse-figure-with-alteration str)
    "Given @var{str}, return a list in this format: (name-of-alteration-or-#f figure)."
@@ -335,8 +335,7 @@ its string, otherwise @code{#t}."
                (alteration
                 (make-concat-markup
                  (list
-                  (make-fontsize-markup (- font-size 2) ;; + looks puny
-                    (assoc-ref make-figure-markup alteration))
+                  (assoc-ref (make-figure-markup (- font-size 2)) alteration)
                   (make-hspace-markup (* 0.2 scaling-factor))
                   (make-fontsize-markup font-size (second figure-list)))))
                (else (make-fontsize-markup font-size fig)))))

@@ -306,10 +306,14 @@ its string, otherwise @code{#t}."
 #(define figure-alterations '("flat" "f" "sharp" "s" "+"))
 
 #(define (make-figure-markup font-size)
-   `(("f" . ,(make-general-align-markup Y DOWN (make-flat-markup)))
-     ("flat" . ,(make-general-align-markup Y DOWN (make-flat-markup)))
-     ("s" . ,(make-general-align-markup Y -0.6 (make-sharp-markup)))
-     ("sharp" . ,(make-general-align-markup Y -0.6 (make-sharp-markup)))
+   `(("f" . ,(make-general-align-markup Y DOWN
+               (make-fontsize-markup font-size (make-flat-markup))))
+     ("flat" . ,(make-general-align-markup Y DOWN
+                  (make-fontsize-markup font-size (make-flat-markup))))
+     ("s" . ,(make-general-align-markup Y -0.6
+               (make-fontsize-markup font-size (make-sharp-markup))))
+     ("sharp" . ,(make-general-align-markup Y -0.6
+                   (make-fontsize-markup font-size (make-sharp-markup))))
      ("+" . ,(make-general-align-markup Y -1.5 (make-augmented-markup (+ font-size 2))))))
 
 #(define (parse-figure-with-alteration str)

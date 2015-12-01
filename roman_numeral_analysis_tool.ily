@@ -302,7 +302,25 @@ its string, otherwise @code{#t}."
                                (make-flat-markup))))
     (else (make-raise-markup offset (make-fontsize-markup -3 quality)))))
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INVERSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#(define figure-alterations '("flat" "f" "sharp" "s" "+"))
+
+#(define make-figure-markup
+   `(("f" . ,(make-general-align-markup Y DOWN (make-flat-markup)))
+     ("flat" . ,(make-general-align-markup Y DOWN (make-flat-markup)))
+     ("s" . ,(make-general-align-markup Y -0.6 (make-sharp-markup)))
+     ("sharp" . ,(make-general-align-markup Y -0.6 (make-sharp-markup)))
+     ("+" . ,(markup "+"))))
+
+#(define (parse-figure-with-alteration str)
+   "Given @var{str}, return a list in this format: (name-of-alteration-or-#f figure)."
+   (if (not (string-null? str))
+       (let* ((alteration
+               (find (lambda (s) (string-prefix? s str)) figure-alterations))
+              (rest (if alteration
+                        (string-drop str (string-length alteration))
+                        str)))
+         (list alteration rest))))
 
 #(define (hyphen-to-en-dash str)
    (string-regexp-substitute "-" "–" str))
@@ -311,14 +329,15 @@ its string, otherwise @code{#t}."
    (let ((scaling-factor (magstep font-size))
          (figures (map hyphen-to-en-dash figures)))
      (map (lambda (fig)
-            (let* ((figure-list (parse-string-with-accidental fig))
+            (let* ((figure-list (parse-figure-with-alteration fig))
                    (init-acc (car figure-list)))
+              (display figure-list) (newline)
               (cond
                (init-acc
                 (make-concat-markup
                  (list
-                  (make-fontsize-markup font-size
-                    (assoc-ref make-accidental-markup init-acc))
+                  (make-fontsize-markup (- font-size 2) ;; + looks puny
+                    (assoc-ref make-figure-markup init-acc))
                   (make-hspace-markup (* 0.2 scaling-factor))
                   (make-fontsize-markup font-size (second figure-list)))))
                (else (make-fontsize-markup font-size fig)))))

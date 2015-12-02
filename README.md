@@ -77,7 +77,7 @@ extender lines by using multiple hyphens:
 
 You can decide if these join well enough for your purposes!
 
-## Note-names
+### Note-names
 
 This tool is designed as a typesetter for Roman numeral analysis, not for
 lead-sheet notation.  There may, however, be occasion to use note-names to
@@ -104,7 +104,7 @@ Note-names may be combined with Roman numerals.  For example,
 Note that in all examples shown, the `rN` command is preceded by `\markup`.  As
 we produce Roman numerals as LilyPond markups, this is unavoidable.
 
-## Changing defaults
+### Changing defaults
 
 The appearance of Roman numerals may be changed in a host of ways common to
 other such objects in LilyPond.  It is beyond the scope of this document to
@@ -166,6 +166,26 @@ This method, however, may require an additional override for good spacing:
 The `\keyIndication` command may be used independently of `StanzaNumber` and
 a `Lyrics` context, in which case the item to modify will be a `TextScript`
 item.
+
+### Scale degrees
+
+Scale degree indications can be created using the `\scaleDegree` markup
+command.  The output is a number with caret preceded by an optional
+accidental.  Any of the English accidental prefixes may be used.  To produce
+notation for scale degree 5, you would write
+
+`\markup \scaleDegree { 5 }`
+
+To indicate a raised scale degree 2, you would write
+
+`\markup \scaleDegree { s2 }`
+
+or
+
+`\markup \scaleDegree { sharp2 }`
+
+Note: To cut down on typing, you may want to rename this command and
+`\keyIndication` above.
 
 ## Example
 

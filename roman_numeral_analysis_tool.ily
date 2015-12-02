@@ -451,3 +451,48 @@ its string, otherwise @code{#t}."
          (make-hspace-markup (* 0.2 scaling-factor))
          ":"
          trailing-spaces)))))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SCALE DEGREES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#(define (hat font-size)
+   (let* ((scaling-factor (magstep font-size))
+          (x (* 0.25 scaling-factor))
+          (y x)
+          (th scaling-factor))
+     (make-override-markup `(thickness . ,th)
+       (make-combine-markup
+        (make-draw-line-markup (cons x y))
+        (make-translate-markup (cons x y)
+          (make-draw-line-markup (cons x (- y))))))))
+
+#(define (find-alteration arg font-size)
+   (let ((first-char (string-take arg 1)))
+     (cond
+      ((string= first-char "s") (make-general-align-markup Y -0.6
+                                  (make-fontsize-markup -3
+                                    (make-sharp-markup))))
+      ((string= first-char "f") (make-general-align-markup Y DOWN
+                                  (make-fontsize-markup -3
+                                    (make-flat-markup))))
+      (else empty-markup))))
+
+#(define-markup-command (scaleDegree layout props degree) (markup?)
+   #:properties ((font-size 1))
+   (let* ((scale-factor (magstep font-size))
+          (hat-stencil (interpret-markup layout props (hat font-size)))
+          (number-stencil
+           (interpret-markup layout props (string-take-right degree 1)))
+          (alteration-stencil
+           (interpret-markup layout props
+             (markup (find-alteration degree scale-factor))))
+          (hat-X-center (interval-center (ly:stencil-extent hat-stencil X)))
+          (number-X-center (interval-center (ly:stencil-extent number-stencil X))))
+     (ly:stencil-combine-at-edge
+      alteration-stencil
+      X RIGHT
+      (ly:stencil-combine-at-edge
+       number-stencil
+       Y UP
+       (ly:stencil-translate-axis hat-stencil (- number-X-center hat-X-center) X)
+       (* 0.1 scale-factor))
+      (* 0.1 scale-factor))))

@@ -316,11 +316,11 @@ its string, otherwise @code{#t}."
                    (make-fontsize-markup font-size (make-sharp-markup))))
      ("+" . ,(make-general-align-markup Y -1.5 (make-augmented-markup (+ font-size 2))))))
 
-#(define (parse-figure-with-alteration str)
+#(define (parse-figure-with-alteration str alteration-list)
    "Given @var{str}, return a list in this format: (name-of-alteration-or-#f figure)."
    (if (not (string-null? str))
        (let* ((alteration
-               (find (lambda (s) (string-prefix? s str)) figure-alterations))
+               (find (lambda (s) (string-prefix? s str)) alteration-list))
               (rest (if alteration
                         (string-drop str (string-length alteration))
                         str)))
@@ -333,7 +333,7 @@ its string, otherwise @code{#t}."
    (let ((scaling-factor (magstep font-size))
          (figures (map hyphen-to-en-dash figures)))
      (map (lambda (fig)
-            (let* ((figure-list (parse-figure-with-alteration fig))
+            (let* ((figure-list (parse-figure-with-alteration fig figure-alterations))
                    (alteration (car figure-list)))
               (cond
                (alteration
@@ -465,30 +465,28 @@ its string, otherwise @code{#t}."
         (make-translate-markup (cons x y)
           (make-draw-line-markup (cons x (- y))))))))
 
-#(define (get-scale-degree-alteration-markup arg font-size)
-   (let ((first-char (string-take arg 1)))
-     (cond
-      ((string= first-char "s") (make-general-align-markup Y -0.6
-                                  (make-fontsize-markup -3
-                                    (make-sharp-markup))))
-      ((string= first-char "f") (make-general-align-markup Y DOWN
-                                  (make-fontsize-markup -3
-                                    (make-flat-markup))))
-      (else empty-markup))))
-
 #(define-markup-command (scaleDegree layout props degree) (markup?)
    #:properties ((font-size 1))
    (let* ((scale-factor (magstep font-size))
           (caret (hat font-size))
-          (number (string-take-right degree 1))
-          (alteration (get-scale-degree-alteration-markup degree scale-factor)))
+          (degree-list (parse-figure-with-alteration degree english-alterations))
+          (alteration (car degree-list))
+          (number (cadr degree-list))
+          (alteration-markup (assoc-ref make-accidental-markup alteration))
+          (alteration-markup
+           (if alteration-markup
+               (make-fontsize-markup -3 alteration-markup)
+               alteration-markup))
+          (number-and-caret
+           (make-general-align-markup Y DOWN
+             (make-override-markup `(baseline-skip . ,(* 1.7 scale-factor))
+               (make-center-column-markup
+                (list
+                 caret
+                 number))))))
      (interpret-markup layout props
-       (make-concat-markup
-        (list
-         alteration
-         (make-general-align-markup Y DOWN
-           (make-override-markup `(baseline-skip . ,(* 1.7 scale-factor))
-             (make-center-column-markup
-              (list
-               caret
-               number)))))))))
+       (if alteration-markup
+           (make-concat-markup (list
+                                alteration-markup
+                                number-and-caret))
+           number-and-caret))))

@@ -301,9 +301,6 @@ its string, otherwise @code{#t}."
     ((string= quality "o") (make-raise-markup (* offset 1.25) (make-diminished-markup font-size)))
     ((string= quality "h") (make-raise-markup (* offset 1.25) (make-half-diminished-markup font-size)))
     ((string= quality "+") (make-raise-markup (* offset 1.25) (make-augmented-markup font-size)))
-    ((string= quality "f") (make-raise-markup (* offset 1.5)
-                             (make-fontsize-markup -4
-                               (make-flat-markup))))
     (else (make-raise-markup offset (make-fontsize-markup font-size quality)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

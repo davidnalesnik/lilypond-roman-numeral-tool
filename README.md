@@ -37,10 +37,9 @@ As an example, the notation
 
 would typeset the notation for a first-inversion V7 chord.
 
-Qualities are indicated by `o` for diminished, `h` for half-diminished,
-`+` for augmented, and `f` for flat.  Other possibilities include
-combinations of `M` and `m` (`M`, `m`, `MM7`, `Mm`, `mm`, `Mmm9`, etc.);
-`add`, `add6`, etc.
+Qualities are indicated by `o` for diminished, `h` for half-diminished, and
+`+` for augmented.  Other possibilities include combinations of `M` and `m`
+(`M`, `m`, `MM7`, `Mm`, `mm`, `Mmm9`, etc.); `add`, `add6`, etc.
 
 As an example, the notation
 

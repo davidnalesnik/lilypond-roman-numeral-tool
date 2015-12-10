@@ -24,9 +24,9 @@ Symbols are created by the `rN` command, for which the syntax is as follows:
 `\markup \rN { ...list of symbols... }`
 
 Between the curly brackets, list the components of a single Roman numeral in
-the following order (as needed): Roman numeral or note-name of root, superscript
+the following order (as needed): Roman numeral or note name of root, superscript
 quality indicator, figures from top to bottom.  For a sccondary function,
-continue with `/` followed by the tonicized Roman numeral or root note-name.
+continue with `/` followed by the tonicized Roman numeral or note name of root.
 Usually, you can skip unnecessary items, though including an empty string
 (`""`) as a spacer may be needed in some ambiguous cases.  Components must be
 separated by whitespace.
@@ -77,16 +77,16 @@ extender lines by using multiple hyphens:
 
 You can decide if these join well enough for your purposes!
 
-### Note-names
+### Note names
 
 This tool is designed as a typesetter for Roman numeral analysis, not for
-lead-sheet notation.  There may, however, be occasion to use note-names to
+lead-sheet notation.  There may, however, be occasion to use note names to
 represent roots (and certainly for key indications, covered below). Limited
-support for English note-names is therefore available.
+support for English note names is therefore available.
 
 (If you require lead-sheet notation, LilyPond proper has extensive support.)
 
-To indicate a note-name, simply write the name used for English input in
+To indicate a note name, simply write the name used for English input in
 LilyPond.  You may capitalize the first letter for a capital in the output.
 
 So to indicate an A-sharp, you may write:
@@ -97,7 +97,7 @@ or
 
 `\markup \rN { As }`
 
-Note-names may be combined with Roman numerals.  For example,
+Note names may be combined with Roman numerals.  For example,
 
 `\markup \rN { V 7 / B-flat }`
 
@@ -157,7 +157,7 @@ Alternately, you can add spaces after the input string like so:
 
 `\set stanza = \markup \keyIndication { "b-flat     " }`
 
-(Notice the lower case note-name indicating a minor key.)
+(Notice the lowercase note name indicating a minor key.)
 
 This method, however, may require an additional override for good spacing:
 

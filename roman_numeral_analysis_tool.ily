@@ -5,15 +5,15 @@
 %%
 %% Syntax: \markup \rN { ...list of symbols... }
 %%
-%% List symbols in this order (as needed): Roman numeral (or note-name),
+%% List symbols in this order (as needed): Roman numeral (or note name),
 %% quality, inversion figures from top to bottom, "/" (if a secondary
-%% function), Roman numeral (or note-name).  Usually, you can skip unnecessary
+%% function), Roman numeral (or note name).  Usually, you can skip unnecessary
 %% items, though a spacer may be needed in some cases.  Use "" instead of the
 %% initial symbol to start with the quality or inversion, for example.  Elements
 %% must be separated by whitespace.
 %%
 %% Notenames are represented by their English LilyPond names.  In addition, you
-%% may capitalize the name for a capitalized notename.
+%% may capitalize the name for a capitalized note name.
 %%
 %% Preceding a string representing a Roman numeral with English alterations
 %% (f, flat, s, sharp, ff, flatflat, ss, x, sharpsharp, natural)
@@ -36,8 +36,8 @@
 %% In our approach, a Roman numeral consists of
 
 %% 1. A "base".  OPTIONAL. This may be a Roman numeral (some combination of I, i, V,
-%% and v, unenforced); a notename; or some other string.  Roman numerals may be
-%% preceded by an accidental, and a notename may be followed by one.
+%% and v, unenforced); a note name; or some other string.  Roman numerals may be
+%% preceded by an accidental, and a note name may be followed by one.
 
 %% 2. a quality indicator.  OPTIONAL.  Eventually, this will simply be something to
 %% set as a superscript following the base, whether or not it is actually a
@@ -48,16 +48,16 @@
 %% to appear in a column after the quality indicator.")
 
 %% 4. "/" followed by a "secondary base" for indicating tonicization.  OPTIONAL.
-%% As with 1. this may a Roman numeral or notename, and may include an accidental.
+%% As with 1. this may a Roman numeral or note name, and may include an accidental.
 
 %% The input syntax is chosen to be friendly to the user rather than the computer.
 %% In particular, the user usually need only type the symbols needed when
 %% reading the analytical symbol aloud.  This is not perfect: spacers
 %% may be necessary for omissions.  Additionally, we try to interpret symbols
 %% without requiring extra semantic indicators: i.e., figure out whether a string
-%% represents a Roman numeral or a notename without the user adding an extra sign.
+%% represents a Roman numeral or a note name without the user adding an extra sign.
 %% In the future, indicators might prove necessary to resolve ambiguity: along with
-%% a flag to distinguish Roman numeral from notename, braces to enclose inversion
+%% a flag to distinguish Roman numeral from note name, braces to enclose inversion
 %% figures may be useful.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INPUT FORMATTING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -115,32 +115,32 @@ inversion numbers."
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTE NAMES / ACCIDENTALS %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Formatting the input into interpretable lists continues here.  We are now
-%% concerned with distinguishing Roman numerals from notenames, and with representing
+%% concerned with distinguishing Roman numerals from note names, and with representing
 %% the presence and position of accidentals.
 
 %% If a string belongs to the list of possible English notenames, we assume that
-%% it is a notename.  The notename will be typeset as uppercase or lowercase depending
+%% it is a note name.  The note name will be typeset as uppercase or lowercase depending
 %% on the capitalization of the input string.
 
-%% If a string is not a notename, we look for an alteration prefix, never a suffix.
+%% If a string is not a note name, we look for an alteration prefix, never a suffix.
 
 %% The procedure parse-string-with-accidental breaks a string into a list representing
 %% initial/terminal alterations and what is left.
 
 %% Notenames and names of accidentals are based on English names.  Other
-%% languages may be used by adding variables modeled after english-notenames and
-%% english-alterations, and changing the definitions of notenames and alterations to
+%% languages may be used by adding variables modeled after english-note names and
+%% english-alterations, and changing the definitions of note names and alterations to
 %% point to these new variables.
 
-#(define english-notenames
+#(define english-note-names
    (map (lambda (p) (symbol->string (car p)))
      (assoc-get 'english language-pitch-names)))
 
-#(define notenames english-notenames)
+#(define note-names english-note-names)
 
-#(define (notename? str)
+#(define (note-name? str)
    (let ((lowercased (format #f "~(~a~)" str)))
-     (list? (member lowercased notenames))))
+     (list? (member lowercased note-names))))
 
 %% Groupings sharing an initial character are arranged in descending length so there
 %% is no need to search for longest match in parse-string-with-accidental.
@@ -151,8 +151,8 @@ inversion numbers."
 
 #(define alterations english-alterations)
 
-#(define (parse-notename str)
-   "Given a notename, return a list consisting of the general name followed by
+#(define (parse-note-name str)
+   "Given a note name, return a list consisting of the general name followed by
 the alteration or @code{#f} if none."
    (let* ((first-char (string-take str 1))
           (all-but-first (string-drop str 1))
@@ -164,11 +164,11 @@ the alteration or @code{#f} if none."
 
 #(define (parse-string-with-accidental str)
    "Given @var{str}, return a list in this format: (initial-accidental?
-notename-or-figure-or-RN terminal-accidental?) If an accidental is found, include
+note-name-or-figure-or-RN terminal-accidental?) If an accidental is found, include
 its string, otherwise @code{#t}."
    (if (not (string-null? str))
-       (if (notename? str)
-           (cons #f (parse-notename str))
+       (if (note-name? str)
+           (cons #f (parse-note-name str))
            ;; Is it a Roman numeral or figure preceded by an accidental?
            (let* ((accidental-prefix
                    (find (lambda (s) (string-prefix? s str)) alterations))
@@ -243,10 +243,13 @@ its string, otherwise @code{#t}."
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% QUALITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% \rN calls these functions using the font-size of the base.  Symbols representing
-%% diminished, half-diminished, and augmented qualities are drawn to rest atop of
-%% baseline (alignment direction = DOWN), and moved by make-quality-markup to their
-%% final vertical position.
+%% Symbols representing diminished, half-diminished, and augmented qualities are
+%% drawn to rest atop of baseline (alignment direction = DOWN), and moved by
+%% make-quality-markup to their final vertical position.  They are tailored to
+%% the font-size (-3) of the ultimate caller (\rN -- default font-size = 1).
+
+%% These symbols are drawn from scratch to allow for customization.  should we
+%% simply use symbols from a font?
 
 #(define (make-diminished-markup font-size)
    "Create circle markup for diminished quality."
@@ -273,6 +276,7 @@ its string, otherwise @code{#t}."
           (make-draw-line-markup (cons (- x) (- y)))
           (make-draw-line-markup (cons x y))))))))
 
+% Noticeably thinner than "+" from font -- change?
 #(define (make-augmented-markup font-size)
    "Create cross markup for augmented quality."
    (let* ((scaling-factor (magstep font-size))
@@ -374,6 +378,8 @@ its string, otherwise @code{#t}."
 
 #(define-markup-command (rN layout props symbols) (markup-list?)
    #:properties ((font-size 1))
+   "Create a symbol for Roman numeral analysis from a @var{symbols}, a list
+of strings."
    (let* ((split (split-list symbols '("/")))
           (first-part (base-quality-figures (car split)))
           (second-part (cadr split)) ; slash and what follows
@@ -425,8 +431,6 @@ its string, otherwise @code{#t}."
            (filter markup?
                    (list base-markup quality-markup figures-markup secondary-markup))))
 
-     ;(pretty-print visible-markups) (newline)
-
      (interpret-markup layout props
        (make-concat-markup visible-markups))))
 
@@ -436,6 +440,8 @@ its string, otherwise @code{#t}."
 
 #(define-markup-command (keyIndication layout props arg) (markup?)
    #:properties ((font-size 1))
+   "Create a key indicator consisting of a English note name followed by a
+colon.  Whitespace after the note name will be included in the returned markup."
    (let* ((scaling-factor (magstep font-size))
           (divide-at-spaces (string-match "([^[:space:]]+)([[:space:]]+)$" arg))
           (base (if divide-at-spaces
@@ -455,6 +461,7 @@ its string, otherwise @code{#t}."
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SCALE DEGREES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #(define (hat font-size)
+   "Draw a caret for use with scale degrees."
    (let* ((scaling-factor (magstep font-size))
           (x (* 0.25 scaling-factor))
           (y x)
@@ -467,6 +474,8 @@ its string, otherwise @code{#t}."
 
 #(define-markup-command (scaleDegree layout props degree) (markup?)
    #:properties ((font-size 1))
+   "Return a digit topped by a caret to represent a scale degree.  Alterations may
+be added by prefacing @var{degree} with an English alteration."
    (let* ((scale-factor (magstep font-size))
           (caret (hat font-size))
           (degree-list (parse-figure-with-alteration degree english-alterations))

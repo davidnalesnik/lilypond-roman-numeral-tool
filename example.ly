@@ -22,7 +22,7 @@ analysis = \lyricmode {
   \markup \rN { vii o 4 3 / IV }
   \markup \rN { IV 6 }
   \markup \rN { ii h 4 3 }
-  \markup \rN { Fr + 6 }
+  \markup \rN { Fr +6 }
   \markup \rN { I 6 4 }
   \markup \rN { vii o 7 / vi }
   \markup \rN { vi }

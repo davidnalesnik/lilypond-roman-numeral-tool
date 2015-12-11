@@ -17,7 +17,9 @@ analysis = \lyricmode {
   \override LyricText.self-alignment-X = #-0.6
   \offset StanzaNumber.X-offset #-3
   \set stanza  = #"G:"
-  \markup \rN { I }
+  % For bare Roman numerals, \rN simply outputs the string.
+  %\markup \rN { I }
+  I
   \markup \rN { V 6 5 }
   \markup \rN { vii o 4 3 / IV }
   \markup \rN { IV 6 }
@@ -25,7 +27,7 @@ analysis = \lyricmode {
   \markup \rN { Fr +6 }
   \markup \rN { I 6 4 }
   \markup \rN { vii o 7 / vi }
-  \markup \rN { vi }
+  vi
 }
 
 \score {

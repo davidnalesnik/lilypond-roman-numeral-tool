@@ -40,11 +40,8 @@ outputs a Roman numeral for a dominant triad.
 (There is little point in using `\rN` for such trivial examples, except as a
 reminder perhaps of the purpose of the markup.  No special formatting is added
 in the case of an unadorned Roman numeral (i.e., without quality indicator,
-figures, etc.)  The notation
-
-`V`
-
-yields the same result as above.)
+figures, etc.)  The notation `\markup { V }` or `V` within a `lyricmode`
+expression yields the same result.)
 
 ### Quality
 
@@ -67,7 +64,7 @@ indicator:
 
 More than two figures are possible:
 
-`\markup \rN { V 6 5 3 }
+`\markup \rN { V 6 5 3 }`
 
 Isolated figures are possible, too.  (If you want to engrave figured bass,
 however, you should use LilyPond's native support.)

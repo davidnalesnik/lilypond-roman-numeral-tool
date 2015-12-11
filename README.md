@@ -31,21 +31,59 @@ Usually, you can skip unnecessary items, though including an empty string
 (`""`) as a spacer may be needed in some ambiguous cases.  Components must be
 separated by whitespace.
 
-As an example, the notation
+As a simple example, the notation
+
+`markup \rN { V }`
+
+outputs a Roman numeral for a dominant triad.
+
+(There is little point in using `\rN` for such trivial examples, except as a
+reminder perhaps of the purpose of the markup.  No special formatting is added
+in the case of an unadorned Roman numeral (i.e., without quality indicator,
+figures, etc.)  The notation
+
+`V`
+
+yields the same result as above.)
+
+### Quality
+
+The following special indicators for chord quality are available: `o` for
+diminished, `h` for half-diminished, and `+` for augmented.  Other possibilities
+include combinations of `M` and `m` (`M`, `m`, `MM7`, `Mm`, `mm`, `Mmm9`, etc.);
+`add`, `add6`, etc.
+
+An augmented dominant triad is produced like so:
+
+`\markup \rN { V + }`
+
+### Figures
+
+List figures in top-to-bottom order.  The following yields a first-inversion
+V7 chord; note that there is no need to account for the absent quality
+indicator:
 
 `\markup \rN { V 6 5 }`
 
-would typeset the notation for a first-inversion V7 chord.
+More than two figures are possible:
 
-Qualities are indicated by `o` for diminished, `h` for half-diminished, and
-`+` for augmented.  Other possibilities include combinations of `M` and `m`
-(`M`, `m`, `MM7`, `Mm`, `mm`, `Mmm9`, etc.); `add`, `add6`, etc.
+`\markup \rN { V 6 5 3 }
 
-As an example, the notation
+Isolated figures are possible, too.  (If you want to engrave figured bass,
+however, you should use LilyPond's native support.)
+
+`\markup \rN { 4 2 }`
+
+### Secondary functions
+
+For secondary functions, simply add the slash and secondary root.  For example,
+the notation
 
 `\markup \rN { vii o 4 3 / V }`
 
 produces a secondary leading-tone diminished-seventh chord of V.
+
+### Alterations
 
 Raising or lowering a chord root may be indicated by prepending alteration
 symbols to the Roman numeral, with no intervening spaces.
@@ -68,6 +106,8 @@ and `+`.  So, for example, to represent a dominant-seventh chord with raised
 `\markup \rN { V 7 +5 }`
 
 Note that alterations are only available *before* figures.
+
+### Lines
 
 Hyphens in figures are converted to en-dashes.  It is possible to simulate
 extender lines by using multiple hyphens:

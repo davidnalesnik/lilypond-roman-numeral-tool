@@ -169,13 +169,18 @@ its string, otherwise @code{#t}."
    (if (not (string-null? str))
        (if (note-name? str)
            (cons #f (parse-note-name str))
-           ;; Is it a Roman numeral or figure preceded by an accidental?
+           ;; Is it a Roman numeral or figure preceded (or followed) by an accidental?
            (let* ((accidental-prefix
                    (find (lambda (s) (string-prefix? s str)) alterations))
-                  (rest (if accidental-prefix
-                            (string-drop str (string-length accidental-prefix))
-                            str)))
-             (list accidental-prefix rest #f)))))
+                  (accidental-suffix
+                   (find (lambda (s) (string-suffix? s str)) alterations))
+                  (rest (cond
+                         (accidental-prefix
+                          (string-drop str (string-length accidental-prefix)))
+                         (accidental-suffix
+                          (string-drop-right str (string-length accidental-suffix)))
+                         (else str))))
+             (list accidental-prefix rest accidental-suffix)))))
 %{
 #(define (inversion? str)
    "Check to see if a string contains a digit.  If so, it is an inversion figure."

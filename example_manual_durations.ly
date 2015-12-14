@@ -12,7 +12,7 @@ bass = \relative c {
 }
 
 analysis = \lyricmode {
-  \set stanza = \markup \keyIndication { E-flat }
+  \set stanza = \markup \keyIndication { Eflat } %% after 2.19.15 use E-flat
   \override LyricText.self-alignment-X = #LEFT
   \markup \rN { V 4 2 / IV }4
   \markup \rN { IV 6 }

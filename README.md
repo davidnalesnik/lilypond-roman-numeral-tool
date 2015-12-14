@@ -125,13 +125,19 @@ support for English note names is therefore available.
 To indicate a note name, simply write the name used for English input in
 LilyPond.  You may capitalize the first letter for a capital in the output.
 
+Entry for note names has changed
+
 So to indicate an A-sharp, you may write:
+
+`\markup \rN { As }`
+
+You can also use the longer name.  In versions after 2.19.15, you would write
 
 `\markup \rN { A-sharp }`
 
-or
+and for versions before
 
-`\markup \rN { As }`
+`\markup \rN { Asharp }`
 
 Note names may be combined with Roman numerals.  For example,
 

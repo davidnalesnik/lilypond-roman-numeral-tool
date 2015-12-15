@@ -309,7 +309,7 @@ its string, otherwise @code{#t}."
     (else (make-raise-markup offset (make-fontsize-markup font-size quality)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#(define figure-alterations '("flat" "f" "sharp" "s" "+"))
+#(define figure-alterations '("flat" "f" "sharp" "s" "+" "natural" "n"))
 
 #(define (make-figure-markup font-size)
    `(("f" . ,(make-general-align-markup Y DOWN
@@ -320,7 +320,12 @@ its string, otherwise @code{#t}."
                (make-fontsize-markup font-size (make-sharp-markup))))
      ("sharp" . ,(make-general-align-markup Y -0.6
                    (make-fontsize-markup font-size (make-sharp-markup))))
-     ("+" . ,(make-general-align-markup Y -1.5 (make-augmented-markup (+ font-size 2))))))
+     ("+" . ,(make-general-align-markup Y -1.5 (make-augmented-markup (+ font-size 2))))
+     ("n" . ,(make-general-align-markup Y -0.6
+               (make-fontsize-markup font-size (make-natural-markup))))
+     ("natural" . ,(make-general-align-markup Y -0.6
+                     (make-fontsize-markup font-size (make-natural-markup))))
+     ))
 
 #(define (parse-figure-with-alteration str alteration-list)
    "Given @var{str}, return a list in this format: (name-of-alteration-or-#f figure)."

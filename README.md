@@ -106,8 +106,8 @@ or
 
 Alterations to figures may be created in similar fashion, by adding various
 prefixes.  The indicators available are as follows: `flat`, `f`, `sharp`, `s`,
-and `+`.  So, for example, to represent a dominant-seventh chord with raised
-5th, you would write
+`+`, `natural` and `n`.  So, for example, to represent a dominant-seventh
+chord with raised 5th, you would write
 
 `\markup \rN { V 7 +5 }`
 
@@ -136,8 +136,6 @@ support for English note names is therefore available.
 
 To indicate a note name, simply write the name used for English input in
 LilyPond.  You may capitalize the first letter for a capital in the output.
-
-Entry for note names has changed
 
 So to indicate an A-sharp, you may write:
 

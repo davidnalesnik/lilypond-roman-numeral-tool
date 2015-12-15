@@ -85,9 +85,14 @@ produces a secondary leading-tone diminished-seventh chord of V.
 Raising or lowering a chord root may be indicated by prepending alteration
 symbols to the Roman numeral, with no intervening spaces.
 
+To accommodate analytical styles which indicate triad quality by an accidental
+placed after a chord root, alteration symbols may be added as suffixes.
+
+(Adding both an accidental suffix and prefix is currently not possible.)
+
 The symbols for alterations are derived from LilyPond's English input language.
 These are `flat` or `f`; `sharp` or `s`; `natural` or `n`.  Though there will
-be little occasion to add double-flats or double-sharps, you can do it with
+be little occasion to add double flats or double sharps, you can do it with
 `flatflat` or `ff`; and `sharpsharp`, `x`, or `ss`.
 
 As an example of altered-chord entry, a Neapolitan-sixth would be indicated
@@ -95,14 +100,21 @@ like so:
 
 `\markup \rN { fII 6 }`
 
-Alterations to figures may be achieved in similar fashion, by adding various
+or
+
+`\markup \rN { flatII 6 }`
+
+Alterations to figures may be created in similar fashion, by adding various
 prefixes.  The indicators available are as follows: `flat`, `f`, `sharp`, `s`,
 and `+`.  So, for example, to represent a dominant-seventh chord with raised
 5th, you would write
 
 `\markup \rN { V 7 +5 }`
 
-Note that alterations are only available *before* figures.
+Note that alterations are available *before* figures, not after.
+
+Alterations may appear *alone* in figures; currently, however, for technical
+reasons, this is not possible in the topmost figure.
 
 ### Lines
 
@@ -231,4 +243,5 @@ Note: To cut down on typing, you may want to rename this command and
 
 ## Example
 
-The file `example.ly` gives an illustration of usage.
+The files `example.ly` and `example_manual_durations.ly` give illustrations
+of usage.

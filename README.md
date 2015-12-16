@@ -73,8 +73,7 @@ however, you should use LilyPond's native support.)
 
 Blank space within figures requires quoting:
 
-`\markup \rN { I "5 &nbsp; &nbsp; &nbsp; 6 &nbsp; &nbsp; &nbsp; 6"
-"3 &nbsp; &nbsp; &nbsp; 3 &nbsp; &nbsp; &nbsp; 4" }`
+`\markup \rN { I "5   6   6" "3   3   4" }`
 
 ### Secondary functions
 

@@ -71,6 +71,11 @@ however, you should use LilyPond's native support.)
 
 `\markup \rN { 4 2 }`
 
+Blank space within figures requires quoting:
+
+`\markup \rN { I "5&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;&nbsp;&nbsp;&nbsp;6"
+"3&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;4" }`
+
 ### Secondary functions
 
 For secondary functions, simply add the slash and secondary root.  For example,
@@ -114,10 +119,6 @@ dominant-seventh chord with raised 5th, you would write
 Alterations may appear anywhere within a figure.  So you may write
 
 `\markup \rN { I 5--f6--5 }`
-
-Blank space within figures requires quoting:
-
-`\markup \rN { I "5    6    6" "3    3    4" }`
 
 Alterations may appear *alone* in figures; currently, however, for technical
 reasons, this is not possible in the topmost figure.

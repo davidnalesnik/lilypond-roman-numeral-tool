@@ -309,7 +309,6 @@ its string, otherwise @code{#t}."
     (else (make-raise-markup offset (make-fontsize-markup font-size quality)))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#(define figure-alterations '("flat" "f" "sharp" "s" "+" "natural" "n"))
 
 #(define (make-figure-markup font-size)
    `(("f" . ,(make-general-align-markup Y DOWN
@@ -327,33 +326,31 @@ its string, otherwise @code{#t}."
                      (make-fontsize-markup font-size (make-natural-markup))))
      ))
 
-#(define (parse-figure-with-alteration str alteration-list)
-   "Given @var{str}, return a list in this format: (name-of-alteration-or-#f figure)."
-   (if (not (string-null? str))
-       (let* ((alteration
-               (find (lambda (s) (string-prefix? s str)) alteration-list))
-              (rest (if alteration
-                        (string-drop str (string-length alteration))
-                        str)))
-         (list alteration rest))))
+#(use-modules (ice-9 regex))
 
 #(define (hyphen-to-en-dash str)
    (string-regexp-substitute "-" "–" str))
 
 #(define (format-figures figures font-size)
    (let ((scaling-factor (magstep font-size))
-         (figures (map hyphen-to-en-dash figures)))
+         ;; We will split string into words, digits, and connector characters
+         (r (make-regexp "[[:alpha:]]+|[[:digit:]]+|[^[:alnum:]]+")))
      (map (lambda (fig)
-            (let* ((figure-list (parse-figure-with-alteration fig figure-alterations))
-                   (alteration (car figure-list)))
-              (cond
-               (alteration
-                (make-concat-markup
-                 (list
-                  (assoc-ref (make-figure-markup (- font-size 2)) alteration)
-                  (make-hspace-markup (* 0.2 scaling-factor))
-                  (make-fontsize-markup font-size (second figure-list)))))
-               (else (make-fontsize-markup font-size fig)))))
+            (let* ((parsed-fig (map match:substring (list-matches r fig)))
+                   ;; conversion causes character encoding problem with Frescobaldi
+                   (parsed-fig (map hyphen-to-en-dash parsed-fig)))
+              (reduce
+               (lambda (elem prev) (make-concat-markup (list prev elem)))
+               empty-markup
+               (map (lambda (f)
+                      (let ((alteration
+                             (assoc-ref (make-figure-markup (- font-size 2)) f)))
+                        (make-concat-markup
+                         (list
+                          (if alteration alteration (make-fontsize-markup font-size f))
+                          ;; TODO: don't add space at the end
+                          (make-hspace-markup (* 0.2 scaling-factor))))))
+                 parsed-fig))))
        figures)))
 
 #(define (make-figures-markup figures font-size offset)
@@ -442,8 +439,6 @@ of strings."
        (make-concat-markup visible-markups))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% KEY INDICATIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-#(use-modules (ice-9 regex))
 
 #(define-markup-command (keyIndication layout props arg) (markup?)
    #:properties ((font-size 1))

@@ -105,13 +105,19 @@ or
 `\markup \rN { flatII 6 }`
 
 Alterations to figures may be created in similar fashion, by adding various
-prefixes.  The indicators available are as follows: `flat`, `f`, `sharp`, `s`,
-`+`, `natural` and `n`.  So, for example, to represent a dominant-seventh
-chord with raised 5th, you would write
+prefixes or suffixes.  The indicators available are as follows: `flat`, `f`,
+`sharp`, `s`, `+`, `natural` and `n`.  So, for example, to represent a
+dominant-seventh chord with raised 5th, you would write
 
 `\markup \rN { V 7 +5 }`
 
-Note that alterations are available *before* figures, not after.
+Alterations may appear anywhere within a figure.  So you may write
+
+`\markup \rN { I 5--f6--5 }`
+
+Blank space within figures requires quoting:
+
+`\markup \rN { I "5    6    6" "3    3    4" }`
 
 Alterations may appear *alone* in figures; currently, however, for technical
 reasons, this is not possible in the topmost figure.
@@ -241,5 +247,4 @@ Note: To cut down on typing, you may want to rename this command and
 
 ## Example
 
-The files `example.ly` and `example_manual_durations.ly` give illustrations
-of usage.
+The directory `examples` contains several illustrations of usage.

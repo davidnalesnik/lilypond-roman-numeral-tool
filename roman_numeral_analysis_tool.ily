@@ -331,13 +331,15 @@ its string, otherwise @code{#t}."
 #(define (hyphen-to-en-dash str)
    (string-regexp-substitute "-" "–" str))
 
+%% Regular expression for splitting figure strings into words, digits, and connector characters.
+#(define figure-regexp (make-regexp "[[:alpha:]]+|[[:digit:]]+|[^[:alnum:]]+"))
+
 #(define (format-figures figures font-size)
-   (let ((scaling-factor (magstep font-size))
-         ;; We will split string into words, digits, and connector characters
-         (r (make-regexp "[[:alpha:]]+|[[:digit:]]+|[^[:alnum:]]+")))
+   (let ((scaling-factor (magstep font-size)))
      (map (lambda (fig)
-            (let* ((parsed-fig (map match:substring (list-matches r fig)))
-                   ;; conversion causes character encoding problem with Frescobaldi
+            (let* ((parsed-fig (map match:substring (list-matches figure-regexp fig)))
+                   ;; Conversion causes character encoding problem with Frescobaldi
+                   ;; if done before applying regexp
                    (parsed-fig (map hyphen-to-en-dash parsed-fig)))
               (reduce
                (lambda (elem prev) (make-concat-markup (list prev elem)))

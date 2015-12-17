@@ -1,6 +1,6 @@
 \version "2.18"
 
-\include "roman_numeral_analysis_tool.ily"
+\include "../roman_numeral_analysis_tool.ily"
 
 bassline = \relative c' {
   \clef bass

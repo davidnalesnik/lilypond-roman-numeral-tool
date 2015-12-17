@@ -310,6 +310,17 @@ its string, otherwise @code{#t}."
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% Kept because called by \scaleDegree.
+#(define (parse-figure-with-alteration str alteration-list)
+   "Given @var{str}, return a list in this format: (name-of-alteration-or-#f figure)."
+   (if (not (string-null? str))
+       (let* ((alteration
+               (find (lambda (s) (string-prefix? s str)) alteration-list))
+              (rest (if alteration
+                        (string-drop str (string-length alteration))
+                        str)))
+         (list alteration rest))))
+
 #(define (make-figure-markup font-size)
    `(("f" . ,(make-general-align-markup Y DOWN
                (make-fontsize-markup font-size (make-flat-markup))))

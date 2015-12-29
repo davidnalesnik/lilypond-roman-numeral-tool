@@ -9,11 +9,14 @@ available for download [here](http://lilypond.org/download.html).
 
 ## How is it used?
 
-To make this tool available to your LilyPond file, you can either copy the code
-in `roman_numeral_analysis_tool.ily` directly into your `ly` file, or you can add
-`\include "roman_numeral_analysis_tool.ily"` to the head (assuming
-that both files are in the same directory).  The two methods do the same thing,
-but using `include` is a good way to keep your `.ly` file uncluttered.
+To make this tool available to your LilyPond file, you can either
+
+1. copy the code in `roman_numeral_analysis_tool.ily` directly into your `ly` file, or
+2. add `\include "roman_numeral_analysis_tool.ily"` to the head (assuming
+that both files are in the same directory).
+
+The two methods do the same thing, but using `include` is a good way to keep your `.ly`
+file uncluttered.
 
 Roman numerals may be created wherever markups are allowed within a LilyPond
 file.  When adding an analysis to music, however, it is strongly recommended
@@ -23,10 +26,15 @@ Symbols are created by the `rN` command, for which the syntax is as follows:
 
 `\markup \rN { ...list of symbols... }`
 
-Between the curly brackets, list the components of a single Roman numeral in
-the following order (as needed): Roman numeral or note name of root, superscript
-quality indicator, figures from top to bottom.  For a sccondary function,
-continue with `/` followed by the tonicized Roman numeral or note name of root.
+Between the curly brackets, list the needed components of a single Roman numeral in
+the following order:
+
+1. Roman numeral or note name of root;
+2. superscript quality indicator;
+3. figures from top to bottom.
+4. For a secondary function, continue with `/` followed by
+5. tonicized Roman numeral or note name of root.
+
 Usually, you can skip unnecessary items, though including an empty string
 (`""`) as a spacer may be needed in some ambiguous cases.  Components must be
 separated by whitespace.
@@ -245,6 +253,6 @@ or
 Note: To cut down on typing, you may want to rename this command and
 `\keyIndication` above.
 
-## Example
+## Complete examples
 
 The directory `examples` contains several illustrations of usage.

@@ -63,15 +63,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INPUT FORMATTING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% The user's input is available as a list of strings.  Here we convert this
-%% list into lists which describe the input more completely.
-
-%% The command \rN uses split-list first to break the input list into a nested
-%% list divided by "/" in order to account for secondary functions: ((vii o 4 3) (/ ii))
-
-%% It then splits the first part of this list into a nested list separating
-%% the base-and-quality (as a unit) from inversion figures: ((vii o) (4 3))
-
-%% The base-and-quality/quality list is then broken up: ((vii) (o) (4 3))
+%% list into a nested list which describes the structure of the input.
 
 #(define (split-list symbols splitter-list)
    "Split a list of strings by a splitter which is a member of a list of
@@ -111,6 +103,14 @@ inversion numbers."
    (let* ((split-by-numbers (split-list symbols numbers))
           (b-and-q (base-and-quality (car split-by-numbers))))
      (append b-and-q (cdr split-by-numbers))))
+
+#(define (parse-input input)
+   (let (;; (vii o 4 3 / ii) --> ((vii o 4 3) (/ ii))
+          (split (split-list input '("/"))))
+     ;; --> ( ((vii) (o) (4 3)) (/ ii) )
+     (append
+      (list (base-quality-figures (car split)))
+      (cdr split))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% NOTE NAMES / ACCIDENTALS %%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -397,9 +397,9 @@ its string, otherwise @code{#t}."
    #:properties ((font-size 1))
    "Create a symbol for Roman numeral analysis from a @var{symbols}, a list
 of strings."
-   (let* ((split (split-list symbols '("/")))
-          (first-part (base-quality-figures (car split)))
-          (second-part (cadr split)) ; slash and what follows
+   (let* ((parsed-input (parse-input symbols))
+          (first-part (car parsed-input))
+          (second-part (cadr parsed-input)) ; slash and what follows
           (base (car first-part))
           (quality (cadr first-part))
           (figures (caddr first-part))

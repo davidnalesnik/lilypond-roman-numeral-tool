@@ -310,17 +310,6 @@ its string, otherwise @code{#t}."
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIGURES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Kept because called by \scaleDegree.
-#(define (parse-figure-with-alteration str alteration-list)
-   "Given @var{str}, return a list in this format: (name-of-alteration-or-#f figure)."
-   (if (not (string-null? str))
-       (let* ((alteration
-               (find (lambda (s) (string-prefix? s str)) alteration-list))
-              (rest (if alteration
-                        (string-drop str (string-length alteration))
-                        str)))
-         (list alteration rest))))
-
 #(define (make-figure-markup font-size)
    `(("f" . ,(make-general-align-markup Y DOWN
                (make-fontsize-markup font-size (make-flat-markup))))
@@ -475,6 +464,16 @@ colon.  Whitespace after the note name will be included in the returned markup."
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SCALE DEGREES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+#(define (parse-scale-degree str alteration-list)
+   "Given @var{str}, return a list in this format: (name-of-alteration-or-#f degree)."
+   (if (not (string-null? str))
+       (let* ((alteration
+               (find (lambda (s) (string-prefix? s str)) alteration-list))
+              (rest (if alteration
+                        (string-drop str (string-length alteration))
+                        str)))
+         (list alteration rest))))
+
 #(define (hat font-size)
    "Draw a caret for use with scale degrees."
    (let* ((scaling-factor (magstep font-size))
@@ -493,7 +492,7 @@ colon.  Whitespace after the note name will be included in the returned markup."
 be added by prefacing @var{degree} with an English alteration."
    (let* ((scale-factor (magstep font-size))
           (caret (hat font-size))
-          (degree-list (parse-figure-with-alteration degree english-alterations))
+          (degree-list (parse-scale-degree degree english-alterations))
           (alteration (car degree-list))
           (number (cadr degree-list))
           (alteration-markup (assoc-ref make-accidental-markup alteration))

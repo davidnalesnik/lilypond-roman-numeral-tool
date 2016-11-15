@@ -313,12 +313,22 @@ its string, otherwise @code{#t}."
 #(define (make-figure-markup font-size)
    `(("f" . ,(make-general-align-markup Y DOWN
                (make-fontsize-markup font-size (make-flat-markup))))
+     ("ff" . ,(make-general-align-markup Y DOWN
+               (make-fontsize-markup font-size (make-doubleflat-markup))))
      ("flat" . ,(make-general-align-markup Y DOWN
                   (make-fontsize-markup font-size (make-flat-markup))))
+     ("flatflat" . ,(make-general-align-markup Y DOWN
+               (make-fontsize-markup font-size (make-doubleflat-markup))))
      ("s" . ,(make-general-align-markup Y -0.6
                (make-fontsize-markup font-size (make-sharp-markup))))
+     ("x" . ,(make-general-align-markup Y -1.9
+               (make-fontsize-markup font-size (make-doublesharp-markup))))
+     ("ss" . ,(make-general-align-markup Y -1.9
+               (make-fontsize-markup font-size (make-doublesharp-markup))))
      ("sharp" . ,(make-general-align-markup Y -0.6
                    (make-fontsize-markup font-size (make-sharp-markup))))
+     ("sharpsharp" . ,(make-general-align-markup Y -1.9
+               (make-fontsize-markup font-size (make-doublesharp-markup))))
      ("+" . ,(make-general-align-markup Y -1.5 (make-augmented-markup (+ font-size 2))))
      ("n" . ,(make-general-align-markup Y -0.6
                (make-fontsize-markup font-size (make-natural-markup))))

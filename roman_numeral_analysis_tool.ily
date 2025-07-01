@@ -339,7 +339,7 @@ its string, otherwise @code{#t}."
 #(use-modules (ice-9 regex))
 
 #(define (hyphen-to-en-dash str)
-   (string-regexp-substitute "-" "–" str))
+   (ly:string-substitute "-" "–" str))
 
 %% Regular expression for splitting figure strings into words, digits, and connector characters.
 #(define figure-regexp (make-regexp "[[:alpha:]]+|[[:digit:]]+|[^[:alnum:]]+"))
